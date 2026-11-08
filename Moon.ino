@@ -33,7 +33,7 @@ LedEngine ledEngine;
 LampWebServer webServer(ledEngine, astro);
 
 unsigned long lastTelemetryTime = 0;
-const unsigned long TELEMETRY_INTERVAL_MS = 5000;
+const unsigned long TELEMETRY_INTERVAL_MS = 5 * 60 * 1000UL; // Перерасчет астрономии каждые 5 минут
 
 MoonTelemetry currentMoon;
 SunTelemetry currentSun;
@@ -106,6 +106,14 @@ void setup() {
 
     currentMoon = astro.calculateMoon(utcNow);
     currentSun = astro.calculateSun(localTm, tzOffset);
+
+    Serial.printf("[LUNAR] Initial Phase: %s | Illum: %.1f%% | Angle: %.1f° | Sunset: %02d:%02d\n",
+                  astro.getAsciiMoon(currentMoon.phaseType),
+                  currentMoon.illumination * 100.0,
+                  currentMoon.phaseAngleDeg,
+                  currentSun.sunsetHour, currentSun.sunsetMinute);
+
+    lastTelemetryTime = millis();
 }
 
 void loop() {
@@ -117,7 +125,7 @@ void loop() {
     // Обновление светодиодного движка (рендеринг фазы или эффекта)
     ledEngine.update(currentMoon, currentSun);
 
-    // Периодический перерасчет астрономии и вывод телеметрии
+    // Периодический перерасчет астрономии (каждые 5 минут)
     if (now - lastTelemetryTime >= TELEMETRY_INTERVAL_MS) {
         lastTelemetryTime = now;
 
@@ -133,5 +141,7 @@ void loop() {
                       currentMoon.illumination * 100.0,
                       currentMoon.phaseAngleDeg,
                       currentSun.sunsetHour, currentSun.sunsetMinute);
+
+        webServer.broadcastTelemetry(currentMoon, currentSun);
     }
 }

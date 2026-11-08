@@ -137,8 +137,8 @@ void LampWebServer::update(const MoonTelemetry& moon, const SunTelemetry& sun) {
     _wsServer.loop();
 
     unsigned long now = millis();
-    // Рассылка астрономической телеметрии каждые 3 секунды
-    if (now - _lastTeleBroadcast >= 3000) {
+    // Рассылка астрономической телеметрии клиентам каждые 10 секунд
+    if (now - _lastTeleBroadcast >= 10000) {
         _lastTeleBroadcast = now;
         broadcastTelemetry(moon, sun);
     }
