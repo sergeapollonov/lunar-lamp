@@ -3,23 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Lunar Lamp — Smart Illumination</title>
+  <meta name="theme-color" content="#060709">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Lunar Lamp — Observatory Core</title>
   <style>
     :root {
-      --bg: #07080B;
-      --card-bg: rgba(17, 20, 29, 0.78);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --text-main: #EDEDF0;
-      --text-muted: #848B9E;
-      --text-dim: #555B6E;
-      --accent-glow: rgba(226, 232, 240, 0.25);
-      --amber-warm: #FBBF24;
-      --blue-cool: #93C5FD;
-      --active-pill: rgba(255, 255, 255, 0.12);
-      --pill-border: rgba(255, 255, 255, 0.16);
-      --radius-lg: 24px;
-      --radius-md: 16px;
-      --radius-sm: 10px;
+      --bg: #060709;
+      --card-bg: linear-gradient(180deg, rgba(18, 21, 30, 0.75) 0%, rgba(10, 12, 18, 0.88) 100%);
+      --card-border: rgba(255, 255, 255, 0.07);
+      --card-highlight: rgba(255, 255, 255, 0.12);
+      --card-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+      
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --text-dim: #475569;
+      
+      --accent-glow: rgba(226, 232, 240, 0.28);
+      --amber-warm: #F59E0B;
+      --blue-cool: #60A5FA;
+      --emerald-live: #10B981;
+      
+      --radius-xl: 22px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+
+      /* Range slider tokens conforming to modern-web-guidance */
+      --slider-track-size: 6px;
+      --slider-thumb-size: 22px;
     }
 
     * {
@@ -28,19 +41,22 @@
       padding: 0;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      -webkit-user-select: none;
     }
 
     body {
       background-color: var(--bg);
       background-image: 
-        radial-gradient(circle at 50% 8%, rgba(226, 232, 240, 0.06) 0%, transparent 45%),
-        radial-gradient(circle at 85% 90%, rgba(251, 191, 36, 0.03) 0%, transparent 40%);
-      color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        radial-gradient(circle at 50% -10%, rgba(148, 163, 184, 0.09) 0%, transparent 60%),
+        radial-gradient(circle at 50% 100%, rgba(245, 158, 11, 0.03) 0%, transparent 50%);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: env(safe-area-inset-top, 20px) 16px env(safe-area-inset-bottom, 24px);
+      padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 24px);
+      overflow-x: hidden;
+      letter-spacing: -0.01em;
     }
 
     .container {
@@ -48,417 +64,742 @@
       max-width: 440px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      padding-bottom: 20px;
+      gap: 16px;
+      padding-bottom: 24px;
     }
 
-    /* Header & Connection status */
+    /* SVG Icon utility */
+    .icon {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .icon-lg { width: 20px; height: 20px; }
+    .icon-sm { width: 13px; height: 13px; }
+
+    /* Header Deck */
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 4px 4px 0;
+      padding: 6px 4px 2px;
     }
     .brand {
       display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFF;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+    .brand-titles {
+      display: flex;
       flex-direction: column;
+      gap: 1px;
     }
     .brand-title {
-      font-size: 19px;
+      font-size: 14px;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
       color: #FFF;
     }
     .brand-sub {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.06em;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--text-dim);
+      color: var(--text-muted);
     }
+
     .status-pill {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       padding: 5px 12px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(14, 17, 24, 0.85);
       border: 1px solid var(--card-border);
-      font-size: 12px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      font-size: 11.5px;
       font-weight: 500;
       color: var(--text-muted);
       transition: all 0.3s ease;
     }
     .status-dot {
-      width: 7px;
-      height: 7px;
+      width: 6.5px;
+      height: 6.5px;
       border-radius: 50%;
       background: #EAB308;
-      box-shadow: 0 0 8px rgba(234, 179, 8, 0.5);
+      box-shadow: 0 0 6px rgba(234, 179, 8, 0.6);
+      transition: all 0.3s ease;
     }
     .status-pill.online .status-dot {
-      background: #10B981;
-      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+      background: var(--emerald-live);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
     }
     .status-pill.online {
-      color: #A7F3D0;
+      color: #CBD5E1;
+      border-color: rgba(16, 185, 129, 0.25);
     }
 
-    /* Card base */
+    /* Master Card Architecture */
     .card {
       background: var(--card-bg);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
+      border-radius: var(--radius-xl);
       padding: 20px;
-      box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.45);
+      box-shadow: var(--card-shadow);
+      position: relative;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 24px; right: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--card-highlight) 50%, transparent 100%);
+      pointer-events: none;
     }
 
-    /* Hero Lunar Visor */
+    /* Hero Lunar Visor Deck */
     .hero-card {
       display: flex;
       flex-direction: column;
       align-items: center;
-      position: relative;
+      padding: 30px 20px 24px;
       overflow: hidden;
-      padding: 28px 20px 24px;
+      text-align: center;
     }
-    .moon-halo {
+    .hero-halo {
       position: absolute;
-      width: 220px;
-      height: 220px;
+      width: 260px;
+      height: 260px;
       border-radius: 50%;
-      top: 24px;
-      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 68%);
-      filter: blur(18px);
-      transition: all 0.4s ease;
+      top: 15px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      filter: blur(28px);
+      opacity: 0.8;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
       pointer-events: none;
     }
-    .moon-visor {
-      width: 170px;
-      height: 170px;
+
+    .moon-dial-wrapper {
       position: relative;
-      cursor: pointer;
-      margin-bottom: 20px;
-      filter: drop-shadow(0 10px 25px rgba(0,0,0,0.6));
+      width: 204px;
+      height: 204px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+      cursor: grab;
     }
+    .moon-dial-wrapper:active {
+      cursor: grabbing;
+    }
+
+    /* Outer Compass Bezel */
+    .moon-bezel {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      pointer-events: none;
+    }
+    .moon-bezel-ticks {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: repeating-conic-gradient(
+        from 0deg,
+        rgba(255, 255, 255, 0.25) 0deg 0.8deg,
+        transparent 0.8deg 15deg
+      );
+      mask: radial-gradient(circle, transparent 66%, black 67% 70%, transparent 71%);
+      -webkit-mask: radial-gradient(circle, transparent 66%, black 67% 70%, transparent 71%);
+    }
+
+    .moon-visor {
+      width: 172px;
+      height: 172px;
+      border-radius: 50%;
+      position: relative;
+      filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.75));
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .moon-dial-wrapper:active .moon-visor {
+      transform: scale(0.98);
+    }
+
     .moon-svg {
       width: 100%;
       height: 100%;
       border-radius: 50%;
+      display: block;
+    }
+
+    .scrub-hint {
+      position: absolute;
+      bottom: -6px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      background: rgba(10, 12, 18, 0.8);
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+    .moon-dial-wrapper:hover .scrub-hint,
+    .moon-dial-wrapper:active .scrub-hint {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .phase-headline {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
     }
     .moon-phase-name {
-      font-size: 21px;
+      font-size: 22px;
       font-weight: 700;
-      letter-spacing: -0.01em;
-      text-align: center;
-      margin-bottom: 4px;
+      letter-spacing: -0.02em;
+      color: #FFF;
     }
-    .moon-phase-details {
-      font-size: 13px;
-      color: var(--text-muted);
-      font-variant-numeric: tabular-nums;
+    .moon-phase-meta {
       display: flex;
       align-items: center;
       gap: 8px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
     }
-    .pill-badge {
-      background: rgba(255, 255, 255, 0.08);
-      padding: 2px 8px;
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 3px 9px;
       border-radius: 6px;
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 600;
-      letter-spacing: 0.03em;
-      color: #CBD5E1;
+      color: #E2E8F0;
+    }
+    .meta-dot-sep {
+      color: var(--text-dim);
+      font-size: 10px;
     }
 
-    /* Mode Selector Tabs */
-    .mode-tabs {
+    /* Precision Segmented Control (Mode Tabs) */
+    .mode-tray {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px;
-      background: rgba(10, 12, 18, 0.65);
+      gap: 4px;
+      background: rgba(8, 10, 15, 0.85);
       border: 1px solid var(--card-border);
-      padding: 5px;
-      border-radius: var(--radius-md);
-      margin-bottom: 4px;
+      padding: 4px;
+      border-radius: var(--radius-lg);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
     }
-    .mode-tab {
+    .mode-btn {
       background: transparent;
-      border: none;
-      color: var(--text-muted);
-      padding: 10px 4px;
-      border-radius: 11px;
-      font-size: 13px;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      padding: 10px 6px;
+      border-radius: var(--radius-md);
+      font-size: 12.5px;
       font-weight: 600;
+      letter-spacing: 0.01em;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      gap: 7px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .mode-tab.active {
-      background: var(--active-pill);
+    .mode-btn:active {
+      transform: scale(0.97);
+    }
+    .mode-btn.active {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: #FFF;
-      border: 1px solid var(--pill-border);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 4px 14px rgba(0, 0, 0, 0.4);
     }
 
-    /* Tactile Sliders */
-    .control-group {
+    /* Master Power Switch Row */
+    .power-chassis {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: rgba(10, 12, 18, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+    }
+    .power-label-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .power-indicator {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .power-text-block {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 2px;
     }
-    .control-row {
+    .power-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #FFF;
+    }
+    .power-status-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Tactile Toggle Switch */
+    .switch-toggle {
+      width: 52px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .switch-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #F8FAFC 0%, #CBD5E1 100%);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .power-chassis.active .power-indicator {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.35);
+      color: var(--emerald-live);
+    }
+    .power-chassis.active .switch-toggle {
+      background: var(--emerald-live);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+    }
+    .power-chassis.active .switch-thumb {
+      transform: translateX(22px);
+    }
+
+    /* Controls Stack */
+    .controls-deck {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 18px;
     }
-    .control-label-row {
+
+    .control-block {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .control-header {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
     }
-    .control-label {
-      font-size: 12px;
+    .control-title {
+      font-size: 11px;
       font-weight: 600;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      letter-spacing: 0.07em;
       color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .control-val {
-      font-size: 14px;
+    .control-value {
+      font-size: 13.5px;
       font-weight: 600;
       font-variant-numeric: tabular-nums;
       color: #FFF;
     }
 
-    /* Custom Range Sliders */
-    .slider {
+    /* Range Slider Styling complying with modern-web-guidance */
+    .slider-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 32px;
+    }
+    input[type="range"].artisan-slider {
+      appearance: none;
       -webkit-appearance: none;
       width: 100%;
-      height: 28px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.07);
-      outline: none;
+      height: 32px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
       cursor: pointer;
-      position: relative;
       touch-action: none;
-      border: 1px solid var(--card-border);
-      overflow: hidden;
-    }
-    .slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #FFF;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-      border: 2px solid rgba(255, 255, 255, 0.8);
-      cursor: pointer;
-    }
-    .slider::-moz-range-thumb {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #FFF;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-      border: 2px solid rgba(255, 255, 255, 0.8);
-      cursor: pointer;
+      outline: none;
+
+      /* Calculated progress variable from JS */
+      --slider-progress: 70%;
+      --slider-fill-color: #FFFFFF;
+      --slider-track-color: rgba(255, 255, 255, 0.07);
     }
 
-    /* Kelvin thermal gradient track */
-    .slider-kelvin {
-      background: linear-gradient(to right, 
-        #FF8A12 0%, 
-        #FFAE5C 25%, 
-        #FFE0B2 50%, 
-        #F0F5FF 75%, 
-        #B8D5FF 100%
+    /* WebKit Track */
+    input[type="range"].artisan-slider::-webkit-slider-runnable-track {
+      height: var(--slider-track-size);
+      border-radius: 999px;
+      background: linear-gradient(
+        to right,
+        var(--slider-fill-color) var(--slider-progress),
+        var(--slider-track-color) var(--slider-progress)
       );
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    /* Effect Cards Grid */
-    .effects-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+    /* WebKit Thumb */
+    input[type="range"].artisan-slider::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: var(--slider-thumb-size);
+      height: var(--slider-thumb-size);
+      border-radius: 50%;
+      margin-top: calc((var(--slider-track-size) - var(--slider-thumb-size)) / 2);
+      background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, #E2E8F0 50%, #94A3B8 100%);
+      box-shadow: 
+        0 3px 8px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.5),
+        inset 0 1px 1px #FFF;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s;
     }
-    .effect-btn {
-      background: rgba(255, 255, 255, 0.035);
+    input[type="range"].artisan-slider:active::-webkit-slider-thumb {
+      transform: scale(1.18);
+      box-shadow: 
+        0 4px 14px rgba(0, 0, 0, 0.8),
+        0 0 0 2px rgba(255, 255, 255, 0.8),
+        0 0 12px rgba(255, 255, 255, 0.4);
+    }
+
+    /* Firefox Track & Thumb */
+    input[type="range"].artisan-slider::-moz-range-track {
+      height: var(--slider-track-size);
+      border-radius: 999px;
+      background: var(--slider-track-color);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    input[type="range"].artisan-slider::-moz-range-progress {
+      height: var(--slider-track-size);
+      border-radius: 999px;
+      background: var(--slider-fill-color);
+    }
+    input[type="range"].artisan-slider::-moz-range-thumb {
+      width: var(--slider-thumb-size);
+      height: var(--slider-thumb-size);
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, #E2E8F0 50%, #94A3B8 100%);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.5);
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Kelvin Custom Slider Track */
+    input[type="range"].kelvin-slider::-webkit-slider-runnable-track {
+      height: 8px;
+      background: linear-gradient(to right,
+        #FF7A00 0%,
+        #FFAA4D 20%,
+        #FFD4A3 40%,
+        #F4F7FF 65%,
+        #A8CBFF 85%,
+        #78AFFF 100%
+      );
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+    input[type="range"].kelvin-slider::-webkit-slider-thumb {
+      margin-top: calc((8px - var(--slider-thumb-size)) / 2);
+    }
+
+    /* Kelvin Scale Markers */
+    .scale-ticks {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 4px;
+      margin-top: -2px;
+    }
+    .tick-item {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .tick-item:hover, .tick-item.active {
+      color: #E2E8F0;
+    }
+
+    /* Precision Astronomical Complication Chips (Manual Phase) */
+    .phase-complications-deck {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    .phase-chips-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 6px;
+    }
+    .phase-dial-chip {
+      background: rgba(10, 12, 18, 0.7);
       border: 1px solid var(--card-border);
       border-radius: var(--radius-md);
+      padding: 8px 2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .phase-dial-chip:active {
+      transform: scale(0.92);
+    }
+    .phase-dial-chip:hover, .phase-dial-chip.active {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+    .chip-moon-svg {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .chip-deg {
+      font-size: 9px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-muted);
+    }
+    .phase-dial-chip.active .chip-deg {
+      color: #FFF;
+    }
+
+    /* Curated Atmospheric Effects Deck */
+    .effects-deck {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .effect-card {
+      background: rgba(10, 12, 18, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
       padding: 14px 12px;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 6px;
+      gap: 8px;
       cursor: pointer;
-      transition: all 0.25s ease;
-      text-align: left;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
     }
-    .effect-btn:active {
+    .effect-card:active {
       transform: scale(0.97);
     }
-    .effect-btn.active {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.35);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    .effect-card.active {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 8px 20px rgba(0, 0, 0, 0.5);
     }
-    .effect-icon {
-      font-size: 20px;
+    .effect-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #CBD5E1;
+      transition: all 0.3s;
     }
-    .effect-title {
-      font-size: 14px;
+    .effect-card.active .effect-icon-box {
+      background: rgba(255, 255, 255, 0.15);
+      color: #FFF;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    .effect-text-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+    }
+    .effect-name {
+      font-size: 13.5px;
       font-weight: 600;
       color: #FFF;
     }
     .effect-desc {
       font-size: 11px;
       color: var(--text-muted);
-      line-height: 1.3;
+      line-height: 1.35;
     }
 
-    /* Quick Phase Jump Pills */
-    .phase-chips {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 4px;
-      margin-top: 10px;
-    }
-    .phase-chip {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 8px 0;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .phase-chip:hover, .phase-chip.active {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.3);
-      transform: translateY(-1px);
-    }
-
-    /* Telemetry grid */
-    .telemetry-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .tele-cell {
+    /* Astronomical Telemetry Deck */
+    .telemetry-deck {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      background: rgba(10, 12, 18, 0.5);
+      gap: 12px;
+    }
+    .tele-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .tele-card {
+      background: rgba(8, 10, 15, 0.65);
       border: 1px solid var(--card-border);
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
     }
-    .tele-label {
-      font-size: 11px;
-      font-weight: 500;
+    .tele-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-dim);
+      color: var(--text-muted);
     }
-    .tele-val {
+    .tele-num {
       font-size: 16px;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
-      color: #F1F5F9;
+      color: #F8FAFC;
+    }
+    .tele-sub {
+      font-size: 10.5px;
+      color: var(--text-dim);
     }
 
-    /* Master Power Button */
-    .power-btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, 0.06);
+    /* Collapsible Hardware Calibration */
+    details.calibration-drawer {
       border: 1px solid var(--card-border);
-      color: #FFF;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .power-btn.on {
-      background: rgba(255, 255, 255, 0.14);
-      border-color: rgba(255, 255, 255, 0.28);
-      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.08);
-    }
-    .power-icon {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #EF4444;
-      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
-      transition: all 0.3s;
-    }
-    .power-btn.on .power-icon {
-      background: #10B981;
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
-    }
-
-    /* Accordion Settings */
-    details.settings-box {
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-      background: rgba(10, 12, 18, 0.4);
+      border-radius: var(--radius-lg);
+      background: rgba(10, 12, 18, 0.5);
       overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
     }
-    summary.settings-summary {
+    summary.calibration-summary {
       padding: 14px 16px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       cursor: pointer;
       list-style: none;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: color 0.2s;
     }
-    summary.settings-summary::-webkit-details-marker {
+    summary.calibration-summary::-webkit-details-marker {
       display: none;
     }
-    .settings-content {
-      padding: 0 16px 16px;
+    summary.calibration-summary:hover {
+      color: #FFF;
+    }
+    .calibration-body {
+      padding: 4px 16px 16px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-    }
-    .input-num {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 8px 12px;
-      color: #FFF;
-      font-size: 14px;
-      font-variant-numeric: tabular-nums;
-      width: 100%;
-      outline: none;
+      gap: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
     }
   </style>
 </head>
 <body>
   <div class="container">
-    
-    <!-- Top Bar -->
+
+    <!-- Top Instrument Header -->
     <header class="header">
       <div class="brand">
-        <span class="brand-title">LUNAR LAMP</span>
-        <span class="brand-sub">Astronomical Core</span>
+        <div class="brand-mark">
+          <svg class="icon icon-lg" viewBox="0 0 24 24">
+            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" opacity="0.3"/>
+            <path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20z"/>
+            <path d="M12 6a6 6 0 0 1 0 12 6 6 0 0 1 0-12z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <span class="brand-title">Lunar Lamp</span>
+          <span class="brand-sub">Astronomical Core</span>
+        </div>
       </div>
       <div id="statusPill" class="status-pill">
         <span class="status-dot"></span>
@@ -468,172 +809,424 @@
 
     <!-- Hero Moon Visor Card -->
     <section class="card hero-card">
-      <div id="moonHalo" class="moon-halo"></div>
-      
-      <!-- Interactive SVG Moon with realistic terminator -->
-      <div id="moonVisor" class="moon-visor">
-        <svg class="moon-svg" viewBox="-100 -100 200 200">
-          <defs>
-            <!-- Текстура лунных морей (Mare Tranquillitatis, Serenitatis) -->
-            <radialGradient id="moonTexture" cx="40%" cy="35%" r="70%">
-              <stop offset="0%" stop-color="#EAEFF5" />
-              <stop offset="55%" stop-color="#CCD5E0" />
-              <stop offset="100%" stop-color="#9BA8B8" />
-            </radialGradient>
-            <!-- Маска терминатора фазы Луны -->
-            <mask id="moonMask">
-              <rect x="-105" y="-105" width="210" height="210" fill="#000" />
-              <!-- Освещенный диск/серп -->
-              <path id="terminatorPath" d="" fill="#FFF" />
-            </mask>
-          </defs>
+      <div id="heroHalo" class="hero-halo"></div>
 
-          <!-- Фоновый пепельный свет (Earthshine / теневая сторона) -->
-          <circle cx="0" cy="0" r="94" fill="#181B24" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" />
-          
-          <!-- Освещенная поверхность Луны с рельефом через маску -->
-          <g mask="url(#moonMask)">
-            <circle cx="0" cy="0" r="94" fill="url(#moonTexture)" />
-            <!-- Силуэты лунных морей и кратеров -->
-            <circle cx="-25" cy="-20" r="28" fill="rgba(80,95,115,0.22)" filter="blur(2px)" />
-            <circle cx="15" cy="-35" r="22" fill="rgba(80,95,115,0.20)" filter="blur(2px)" />
-            <circle cx="-10" cy="25" r="34" fill="rgba(70,85,105,0.25)" filter="blur(3px)" />
-            <circle cx="35" cy="15" r="20" fill="rgba(80,95,115,0.18)" filter="blur(2px)" />
-            <circle cx="10" cy="55" r="7" fill="rgba(255,255,255,0.3)" filter="blur(1px)" /> <!-- Tycho -->
-          </g>
-        </svg>
+      <!-- Interactive Visor with Touch Dragging -->
+      <div id="moonDial" class="moon-dial-wrapper">
+        <div class="moon-bezel"></div>
+        <div class="moon-bezel-ticks"></div>
+
+        <div id="moonVisor" class="moon-visor">
+          <svg class="moon-svg" viewBox="-100 -100 200 200">
+            <defs>
+              <!-- Фильтр для рельефа и текстуры реголита -->
+              <filter id="lunarNoise" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" result="noise" />
+                <feColorMatrix type="matrix" values="
+                  0 0 0 0 0.88
+                  0 0 0 0 0.90
+                  0 0 0 0 0.94
+                  0 0 0 0.16 0" in="noise" result="coloredNoise" />
+                <feComposite operator="in" in2="SourceGraphic" />
+              </filter>
+
+              <!-- Градиент освещенного диска (Lommel-Seeliger scattering) -->
+              <radialGradient id="lunarSurface" cx="42%" cy="38%" r="68%">
+                <stop offset="0%" stop-color="#F4F7FB" />
+                <stop offset="60%" stop-color="#D5DCE6" />
+                <stop offset="90%" stop-color="#A6B4C4" />
+                <stop offset="100%" stop-color="#7A8798" />
+              </radialGradient>
+
+              <!-- Маска терминатора -->
+              <mask id="terminatorMask">
+                <rect x="-105" y="-105" width="210" height="210" fill="#000" />
+                <path id="terminatorShape" d="" fill="#FFF" />
+              </mask>
+            </defs>
+
+            <!-- Базовый пепельный диск Луны (Earthshine / теневая сторона) -->
+            <circle cx="0" cy="0" r="92" fill="#10131A" stroke="rgba(255,255,255,0.06)" stroke-width="1.2" />
+
+            <!-- Освещенная полусфера через маску терминатора -->
+            <g mask="url(#terminatorMask)">
+              <!-- Базовая поверхность -->
+              <circle cx="0" cy="0" r="92" fill="url(#lunarSurface)" />
+
+              <!-- Лунные моря (Mare Imbrium, Serenitatis, Tranquillitatis, Crisium, Oceanus Procellarum) -->
+              <!-- Oceanus Procellarum & Imbrium -->
+              <path d="M -50 -30 Q -25 -55 5 -45 Q 15 -25 -10 -5 Q -40 -10 -50 -30 Z" fill="rgba(85, 96, 114, 0.32)" filter="blur(3px)" />
+              <path d="M -15 -40 Q 15 -48 30 -30 Q 20 -15 -5 -25 Z" fill="rgba(80, 92, 110, 0.30)" filter="blur(2.5px)" />
+              
+              <!-- Mare Serenitatis & Tranquillitatis -->
+              <path d="M 8 -20 Q 35 -28 42 -10 Q 30 10 5 -5 Z" fill="rgba(80, 92, 110, 0.34)" filter="blur(2.5px)" />
+              <path d="M 12 5 Q 40 0 45 22 Q 25 35 10 20 Z" fill="rgba(75, 88, 105, 0.35)" filter="blur(3px)" />
+
+              <!-- Mare Crisium -->
+              <ellipse cx="54" cy="-12" rx="11" ry="8" fill="rgba(70, 82, 100, 0.40)" filter="blur(1.5px)" transform="rotate(-15 54 -12)" />
+
+              <!-- Mare Nubium & Humorum -->
+              <path d="M -40 10 Q -15 5 -10 35 Q -35 48 -45 25 Z" fill="rgba(80, 94, 112, 0.32)" filter="blur(3px)" />
+
+              <!-- Кратер Тихо (Tycho) и система радиальных лучей -->
+              <circle cx="-10" cy="58" r="5" fill="#FFFFFF" opacity="0.85" filter="blur(0.5px)" />
+              <!-- Лучи Тихо -->
+              <path d="M -10 58 L -35 20 M -10 58 L 25 35 M -10 58 L -5 10 M -10 58 L -30 75" 
+                    stroke="rgba(255,255,255,0.4)" stroke-width="1.2" stroke-linecap="round" filter="blur(1px)" />
+
+              <!-- Кратер Коперник (Copernicus) -->
+              <circle cx="-22" cy="-10" r="4" fill="#FFFFFF" opacity="0.75" filter="blur(0.5px)" />
+
+              <!-- Текстурный микрорельеф -->
+              <rect x="-95" y="-95" width="190" height="190" filter="url(#lunarNoise)" />
+            </g>
+
+            <!-- Лимбовое затемнение / сферический объемный обод -->
+            <circle cx="0" cy="0" r="92" fill="none" stroke="rgba(0,0,0,0.35)" stroke-width="3" />
+            <circle cx="0" cy="0" r="92" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
+          </svg>
+        </div>
+
+        <span class="scrub-hint">Потяните диск для фазы</span>
       </div>
 
-      <h1 id="moonPhaseName" class="moon-phase-name">Растущая Луна</h1>
-      <div class="moon-phase-details">
-        <span id="illuminationVal" class="pill-badge">64.2% освещенности</span>
-        <span id="lunarAgeVal">8.4 дня цикла</span>
+      <div class="phase-headline">
+        <h1 id="moonPhaseName" class="moon-phase-name">Растущая Луна</h1>
+        <div class="moon-phase-meta">
+          <span id="metaIllum" class="meta-badge">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <span id="illuminationVal">64.2%</span>
+          </span>
+          <span class="meta-dot-sep">·</span>
+          <span id="lunarAgeVal">8.4 дня цикла</span>
+        </div>
       </div>
     </section>
 
-    <!-- Master Power & Mode Selector -->
-    <div class="mode-tabs">
-      <button class="mode-tab active" data-mode="0">🌙 Авто-Небо</button>
-      <button class="mode-tab" data-mode="1">🎛️ Ручной</button>
-      <button class="mode-tab" data-mode="2">✨ Эффекты</button>
+    <!-- Master Mode Tabs (Physical Segmented Control) -->
+    <div class="mode-tray">
+      <button class="mode-btn active" data-mode="0">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <span>Авто-Небо</span>
+      </button>
+      <button class="mode-btn" data-mode="1">
+        <svg class="icon" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3v6m0 6v6m9-9h-6m-6 0H3"/>
+        </svg>
+        <span>Ручной</span>
+      </button>
+      <button class="mode-btn" data-mode="2">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+        </svg>
+        <span>Эффекты</span>
+      </button>
     </div>
 
-    <!-- Main Sliders Card -->
-    <section class="card control-group">
-      <!-- Power Switch -->
-      <button id="powerBtn" class="power-btn on">
-        <span class="power-icon"></span>
-        <span id="powerText">Лампа включена</span>
-      </button>
+    <!-- Main Controls Card -->
+    <section class="card controls-deck">
+
+      <!-- Master Power Chassis -->
+      <div id="powerChassis" class="power-chassis active">
+        <div class="power-label-group">
+          <div class="power-indicator">
+            <svg class="icon icon-lg" viewBox="0 0 24 24">
+              <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+              <line x1="12" y1="2" x2="12" y2="12"/>
+            </svg>
+          </div>
+          <div class="power-text-block">
+            <span class="power-title">Питание лампы</span>
+            <span id="powerStatusSub" class="power-status-sub">Активно · 5V FCOB</span>
+          </div>
+        </div>
+        <div id="switchToggle" class="switch-toggle" role="switch" aria-checked="true">
+          <div class="switch-thumb"></div>
+        </div>
+      </div>
 
       <!-- Brightness Slider -->
-      <div class="control-row">
-        <div class="control-label-row">
-          <span class="control-label">Яркость</span>
-          <span id="brightVal" class="control-val">70%</span>
+      <div class="control-block">
+        <div class="control-header">
+          <span class="control-title">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            Яркость
+          </span>
+          <span id="brightVal" class="control-value">70%</span>
         </div>
-        <input id="brightSlider" class="slider" type="range" min="0" max="255" value="180">
+        <div class="slider-wrap">
+          <input id="brightSlider" class="artisan-slider" type="range" min="0" max="255" value="180">
+        </div>
       </div>
 
       <!-- Kelvin Temperature Slider -->
-      <div class="control-row">
-        <div class="control-label-row">
-          <span class="control-label">Цветовая температура</span>
-          <span id="kelvinVal" class="control-val">4000 K · Нейтральный</span>
+      <div class="control-block">
+        <div class="control-header">
+          <span class="control-title">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+            </svg>
+            Цветовая температура
+          </span>
+          <span id="kelvinVal" class="control-value">4000 K · Нейтральный</span>
         </div>
-        <input id="kelvinSlider" class="slider slider-kelvin" type="range" min="2000" max="6500" step="50" value="4000">
-      </div>
-
-      <!-- Manual Phase Scrubber (Visible in Manual Mode) -->
-      <div id="manualPhaseBox" class="control-row" style="display: none;">
-        <div class="control-label-row">
-          <span class="control-label">Угол фазы</span>
-          <span id="manualAngleVal" class="control-val">180° (Полнолуние)</span>
+        <div class="slider-wrap">
+          <input id="kelvinSlider" class="artisan-slider kelvin-slider" type="range" min="2000" max="6500" step="50" value="4000">
         </div>
-        <input id="manualPhaseSlider" class="slider" type="range" min="0" max="359" value="180">
-        
-        <!-- 8 Quick Jump Chips -->
-        <div class="phase-chips">
-          <div class="phase-chip" title="Новолуние" data-angle="0">🌑</div>
-          <div class="phase-chip" title="Растущий серп" data-angle="45">🌒</div>
-          <div class="phase-chip" title="Первая четверть" data-angle="90">🌓</div>
-          <div class="phase-chip" title="Растущая Луна" data-angle="135">🌔</div>
-          <div class="phase-chip" title="Полнолуние" data-angle="180">🌕</div>
-          <div class="phase-chip" title="Убывающая Луна" data-angle="225">🌖</div>
-          <div class="phase-chip" title="Последняя четверть" data-angle="270">🌗</div>
-          <div class="phase-chip" title="Убывающий серп" data-angle="315">🌘</div>
+        <div class="scale-ticks">
+          <span class="tick-item" data-k="2200">2200K Теплый</span>
+          <span class="tick-item" data-k="3200">3200K</span>
+          <span class="tick-item active" data-k="4000">4000K Лунный</span>
+          <span class="tick-item" data-k="5500">5500K</span>
+          <span class="tick-item" data-k="6500">6500K Холодный</span>
         </div>
       </div>
 
-      <!-- Effects Selector Grid (Visible in Effects Mode) -->
-      <div id="effectsBox" class="effects-grid" style="display: none;">
-        <div class="effect-btn" data-eff="2">
-          <span class="effect-icon">🫁</span>
-          <span class="effect-title">Дыхание</span>
-          <span class="effect-desc">Медитативная плавная пульсация света</span>
+      <!-- Manual Phase Deck (Visible in Manual Mode) -->
+      <div id="manualPhaseDeck" class="phase-complications-deck" style="display: none;">
+        <div class="control-header">
+          <span class="control-title">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 7v5l3 3"/>
+            </svg>
+            Угол терминатора
+          </span>
+          <span id="manualAngleVal" class="control-value">180° (Полнолуние)</span>
         </div>
-        <div class="effect-btn" data-eff="3">
-          <span class="effect-icon">🔥</span>
-          <span class="effect-title">Затмение</span>
-          <span class="effect-desc">Мерцающая огненная корона протуберанцев</span>
+        <div class="slider-wrap">
+          <input id="manualPhaseSlider" class="artisan-slider" type="range" min="0" max="359" value="180">
         </div>
-        <div class="effect-btn" data-eff="4">
-          <span class="effect-icon">🌌</span>
-          <span class="effect-title">Сияние</span>
-          <span class="effect-desc">Изумрудно-бирюзовые волны Авроры</span>
+
+        <!-- 8 Astronomical Complication Dials -->
+        <div class="phase-chips-grid">
+          <div class="phase-dial-chip" title="Новолуние" data-angle="0">
+            <svg class="chip-moon-svg" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="9" fill="#12151D" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+            </svg>
+            <span class="chip-deg">0°</span>
+          </div>
+          <div class="phase-dial-chip" title="Растущий серп" data-angle="45">
+            <svg class="chip-moon-svg" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="9" fill="#12151D" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+              <path d="M 10 1 A 9 9 0 0 1 10 19 A 6.3 9 0 0 1 10 1 Z" fill="#E2E8F0"/>
+            </svg>
+            <span class="chip-deg">45°</span>
+          </div>
+          <div class="phase-dial-chip" title="Первая четверть" data-angle="90">
+            <svg class="chip-moon-svg" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="9" fill="#12151D" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+              <path d="M 10 1 A 9 9 0 0 1 10 19 Z" fill="#E2E8F0"/>
+            </svg>
+            <span class="chip-deg">90°</span>
+          </div>
+          <div class="phase-dial-chip" title="Растущая Луна" data-angle="135">
+            <svg class="chip-moon-svg" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="9" fill="#12151D" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+              <path d="M 10 1 A 9 9 0 0 1 10 19 A 6.3 9 0 0 0 10 1 Z" fill="#E2E8F0"/>
+            </svg>
+            <span class="chip-deg">135°</span>
+          </div>
+          <div class="phase-dial-chip active" title="Полнолуние" data-angle="180">
+            <svg class="chip-moon-svg" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="9" fill="#E2E8F0" stroke="#FFF" stroke-width="1"/>
+            </svg>
+            <span class="chip-deg">180°</span>
+          </div>
+          <div class="phase-dial-chip" title="Убывающая Луна" data-angle="225">
+            <svg class="chip-moon-svg" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="9" fill="#12151D" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+              <path d="M 10 1 A 9 9 0 0 0 10 19 A 6.3 9 0 0 1 10 1 Z" fill="#E2E8F0"/>
+            </svg>
+            <span class="chip-deg">225°</span>
+          </div>
+          <div class="phase-dial-chip" title="Последняя четверть" data-angle="270">
+            <svg class="chip-moon-svg" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="9" fill="#12151D" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+              <path d="M 10 1 A 9 9 0 0 0 10 19 Z" fill="#E2E8F0"/>
+            </svg>
+            <span class="chip-deg">270°</span>
+          </div>
+          <div class="phase-dial-chip" title="Убывающий серп" data-angle="315">
+            <svg class="chip-moon-svg" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="9" fill="#12151D" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+              <path d="M 10 1 A 9 9 0 0 0 10 19 A 6.3 9 0 0 0 10 1 Z" fill="#E2E8F0"/>
+            </svg>
+            <span class="chip-deg">315°</span>
+          </div>
         </div>
-        <div class="effect-btn" data-eff="5">
-          <span class="effect-icon">🕯️</span>
-          <span class="effect-title">Ночник</span>
-          <span class="effect-desc">Ровный теплый статичный свет</span>
+      </div>
+
+      <!-- Curated Effects Deck (Visible in Effects Mode) -->
+      <div id="effectsDeck" class="effects-deck" style="display: none;">
+        <div class="effect-card" data-eff="2">
+          <div class="effect-icon-box">
+            <svg class="icon icon-lg" viewBox="0 0 24 24">
+              <path d="M2 12h2a8 8 0 0 1 16 0h2"/>
+              <path d="M6 12a6 6 0 0 1 12 0"/>
+            </svg>
+          </div>
+          <div class="effect-text-box">
+            <span class="effect-name">Дыхание</span>
+            <span class="effect-desc">Медитативная синусоида пульсации</span>
+          </div>
+        </div>
+
+        <div class="effect-card" data-eff="3">
+          <div class="effect-icon-box">
+            <svg class="icon icon-lg" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="5"/>
+              <path d="M12 1v3m0 16v3M1 12h3m16 0h3m-3.5-7.5l-2.1 2.1m-8.8 8.8l-2.1 2.1m13 0l-2.1-2.1m-8.8-8.8L4.5 4.5"/>
+            </svg>
+          </div>
+          <div class="effect-text-box">
+            <span class="effect-name">Затмение</span>
+            <span class="effect-desc">Огненная солнечная корона и протуберанцы</span>
+          </div>
+        </div>
+
+        <div class="effect-card" data-eff="4">
+          <div class="effect-icon-box">
+            <svg class="icon icon-lg" viewBox="0 0 24 24">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+              <line x1="4" y1="22" x2="4" y2="15"/>
+            </svg>
+          </div>
+          <div class="effect-text-box">
+            <span class="effect-name">Сияние</span>
+            <span class="effect-desc">Геомагнитные волны Авроры</span>
+          </div>
+        </div>
+
+        <div class="effect-card" data-eff="5">
+          <div class="effect-icon-box">
+            <svg class="icon icon-lg" viewBox="0 0 24 24">
+              <path d="M9 18h6m-4 3h2"/>
+              <path d="M12 2a5 5 0 0 0-5 5c0 2.5 1.5 4 2 5h6c.5-1 2-2.5 2-5a5 5 0 0 0-5-5z"/>
+            </svg>
+          </div>
+          <div class="effect-text-box">
+            <span class="effect-name">Ночник</span>
+            <span class="effect-desc">2200K ровный свечной свет для сна</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Astronomical Telemetry Deck -->
+    <section class="card telemetry-deck">
+      <div class="control-title">
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        Астрономическая телеметрия
+      </div>
+      <div class="tele-grid">
+        <div class="tele-card">
+          <div class="tele-meta-row">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <path d="M17 18a5 5 0 0 0-10 0"/>
+              <line x1="12" y1="2" x2="12" y2="9"/>
+              <line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/>
+              <line x1="1" y1="18" x2="3" y2="18"/>
+              <line x1="21" y1="18" x2="23" y2="18"/>
+              <line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/>
+              <line x1="23" y1="22" x2="1" y2="22"/>
+            </svg>
+            <span>Восход / Закат</span>
+          </div>
+          <div id="teleSun" class="tele-num">06:43 / 15:55</div>
+          <span id="teleDayPhase" class="tele-sub">День · CET</span>
+        </div>
+
+        <div class="tele-card">
+          <div class="tele-meta-row">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 3v18"/>
+            </svg>
+            <span>Свет на кольце</span>
+          </div>
+          <div id="teleSide" class="tele-num">Слева</div>
+          <span id="teleSideSub" class="tele-sub">Убывающая Луна</span>
+        </div>
+
+        <div class="tele-card">
+          <div class="tele-meta-row">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <path d="M12 2v20M2 12h20"/>
+            </svg>
+            <span>Фазовый угол</span>
+          </div>
+          <div id="telePhaseAngle" class="tele-num">344.0°</div>
+          <span class="tele-sub">Синодический вектор</span>
+        </div>
+
+        <div class="tele-card">
+          <div class="tele-meta-row">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>Системное время</span>
+          </div>
+          <div id="teleLocalTime" class="tele-num">--:--:--</div>
+          <span class="tele-sub">NTP синхронизировано</span>
         </div>
       </div>
     </section>
 
-    <!-- Real-time Astronomical Telemetry Card -->
-    <section class="card">
-      <div class="control-label" style="margin-bottom: 12px;">Астрономическая телеметрия</div>
-      <div class="telemetry-grid">
-        <div class="tele-cell">
-          <span class="tele-label">Восход / Закат</span>
-          <span id="teleSun" class="tele-val">06:43 / 15:55</span>
-        </div>
-        <div class="tele-cell">
-          <span class="tele-label">Фаза суток</span>
-          <span id="teleDayPhase" class="tele-val">День</span>
-        </div>
-        <div class="tele-cell">
-          <span class="tele-label">Освещенность</span>
-          <span id="teleIllum" class="tele-val">1.9%</span>
-        </div>
-        <div class="tele-cell">
-          <span class="tele-label">Свет на кольце</span>
-          <span id="teleSide" class="tele-val">Слева (Убыв.)</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Calibration & Hardware Settings -->
-    <details class="settings-box">
-      <summary class="settings-summary">
-        <span>⚙️ Настройки и калибровка лампы</span>
-        <span>▾</span>
+    <!-- Calibration & Hardware Drawer -->
+    <details class="calibration-drawer">
+      <summary class="calibration-summary">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          Калибровка и параметры LED ленты
+        </span>
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
       </summary>
-      <div class="settings-content">
-        <div class="control-row">
-          <div class="control-label-row">
-            <span class="control-label">Количество диодов ленты</span>
-            <span id="ledCountVal" class="control-val">60 шт</span>
+      <div class="calibration-body">
+        <div class="control-block">
+          <div class="control-header">
+            <span class="control-title">Количество диодов FCOB</span>
+            <span id="ledCountVal" class="control-value">60 шт</span>
           </div>
-          <input id="ledCountSlider" class="slider" type="range" min="20" max="260" value="60">
+          <div class="slider-wrap">
+            <input id="ledCountSlider" class="artisan-slider" type="range" min="20" max="260" value="60">
+          </div>
         </div>
 
-        <div class="control-row">
-          <div class="control-label-row">
-            <span class="control-label">Калибровка верха (смещение угла)</span>
-            <span id="offsetAngleVal" class="control-val">0°</span>
+        <div class="control-block">
+          <div class="control-header">
+            <span class="control-title">Калибровка верхней точки (смещение)</span>
+            <span id="offsetAngleVal" class="control-value">0°</span>
           </div>
-          <input id="offsetSlider" class="slider" type="range" min="0" max="359" value="0">
+          <div class="slider-wrap">
+            <input id="offsetSlider" class="artisan-slider" type="range" min="0" max="359" value="0">
+          </div>
         </div>
       </div>
     </details>
@@ -650,7 +1243,7 @@
       manualAngle: 180,
       ledCount: 60,
       offsetAngle: 0,
-      // Telemetry from ESP32
+      // Astronomical Telemetry
       illumination: 0.019,
       phaseAngle: 344.0,
       isWaxing: false,
@@ -664,42 +1257,58 @@
     // DOM Elements
     const statusPill = document.getElementById('statusPill');
     const statusText = document.getElementById('statusText');
-    const terminatorPath = document.getElementById('terminatorPath');
-    const moonHalo = document.getElementById('moonHalo');
+    const terminatorShape = document.getElementById('terminatorShape');
+    const heroHalo = document.getElementById('heroHalo');
     const moonPhaseName = document.getElementById('moonPhaseName');
     const illuminationVal = document.getElementById('illuminationVal');
     const lunarAgeVal = document.getElementById('lunarAgeVal');
-    const powerBtn = document.getElementById('powerBtn');
-    const powerText = document.getElementById('powerText');
+    const powerChassis = document.getElementById('powerChassis');
+    const switchToggle = document.getElementById('switchToggle');
+    const powerStatusSub = document.getElementById('powerStatusSub');
     const brightSlider = document.getElementById('brightSlider');
     const brightVal = document.getElementById('brightVal');
     const kelvinSlider = document.getElementById('kelvinSlider');
     const kelvinVal = document.getElementById('kelvinVal');
-    const manualPhaseBox = document.getElementById('manualPhaseBox');
+    const manualPhaseDeck = document.getElementById('manualPhaseDeck');
     const manualPhaseSlider = document.getElementById('manualPhaseSlider');
     const manualAngleVal = document.getElementById('manualAngleVal');
-    const effectsBox = document.getElementById('effectsBox');
-    const modeTabs = document.querySelectorAll('.mode-tab');
-    const effectBtns = document.querySelectorAll('.effect-btn');
-    const phaseChips = document.querySelectorAll('.phase-chip');
+    const effectsDeck = document.getElementById('effectsDeck');
+    const modeBtns = document.querySelectorAll('.mode-btn');
+    const effectCards = document.querySelectorAll('.effect-card');
+    const phaseDialChips = document.querySelectorAll('.phase-dial-chip');
     const teleSun = document.getElementById('teleSun');
     const teleDayPhase = document.getElementById('teleDayPhase');
-    const teleIllum = document.getElementById('teleIllum');
     const teleSide = document.getElementById('teleSide');
+    const teleSideSub = document.getElementById('teleSideSub');
+    const telePhaseAngle = document.getElementById('telePhaseAngle');
+    const teleLocalTime = document.getElementById('teleLocalTime');
     const ledCountSlider = document.getElementById('ledCountSlider');
     const ledCountVal = document.getElementById('ledCountVal');
     const offsetSlider = document.getElementById('offsetSlider');
     const offsetAngleVal = document.getElementById('offsetAngleVal');
+    const moonDial = document.getElementById('moonDial');
+    const kelvinTicks = document.querySelectorAll('.tick-item');
 
-    // SVG Terminator drawing algorithm
-    // Renders physically accurate orthographic spherical shadow
+    // Haptic feedback utility
+    function haptic(ms = 8) {
+      if (window.navigator && window.navigator.vibrate) {
+        try { window.navigator.vibrate(ms); } catch (e) {}
+      }
+    }
+
+    // Sync Slider Progress per modern-web-guidance
+    function updateSliderFill(slider) {
+      const min = parseFloat(slider.min) || 0;
+      const max = parseFloat(slider.max) || 100;
+      const val = parseFloat(slider.value) || 0;
+      const percent = ((val - min) / (max - min)) * 100;
+      slider.style.setProperty('--slider-progress', percent + '%');
+    }
+
+    // Physical Moon Terminator Calculation
     function updateMoonVisor(angleDeg) {
-      const R = 94;
+      const R = 92;
       const rad = (angleDeg * Math.PI) / 180;
-      const isWaxing = angleDeg < 180;
-      const illum = (1 - Math.cos(rad)) / 2;
-
-      // Cosine factor for ellipse radius
       const rx = Math.abs(R * Math.cos(rad));
 
       let d = "";
@@ -716,81 +1325,167 @@
         // Waning crescent
         d = `M 0 -${R} A ${R} ${R} 0 0 0 0 ${R} A ${rx} ${R} 0 0 0 0 -${R} Z`;
       }
-      terminatorPath.setAttribute("d", d);
+      terminatorShape.setAttribute("d", d);
 
-      // Dynamic Halo Color based on Kelvin and Brightness
+      // Atmospheric Halo Color & Intensity
       const kAlpha = state.power ? (state.brightness / 255) * 0.45 : 0;
       let haloColor = "rgba(226, 232, 240, " + kAlpha + ")";
-      if (state.kelvin <= 2800) {
-        haloColor = "rgba(251, 191, 36, " + kAlpha + ")";
+      if (state.kelvin <= 2600) {
+        haloColor = "rgba(245, 158, 11, " + kAlpha + ")";
+      } else if (state.kelvin <= 3400) {
+        haloColor = "rgba(251, 191, 36, " + (kAlpha * 0.9) + ")";
       } else if (state.kelvin >= 5500) {
-        haloColor = "rgba(147, 197, 253, " + kAlpha + ")";
+        haloColor = "rgba(96, 165, 250, " + kAlpha + ")";
       }
-      moonHalo.style.background = `radial-gradient(circle, ${haloColor} 0%, transparent 68%)`;
+      heroHalo.style.background = `radial-gradient(circle, ${haloColor} 0%, transparent 70%)`;
     }
 
     function getKelvinDesc(k) {
-      if (k < 2600) return `${k} K · Свечной свет`;
-      if (k < 3400) return `${k} K · Теплый ламповый`;
-      if (k < 4500) return `${k} K · Нейтральный лунный`;
-      if (k < 5600) return `${k} K · Чистый лунный`;
-      return `${k} K · Морозный реголит`;
+      if (k < 2400) return `${k} K · Свечной свет`;
+      if (k < 3200) return `${k} K · Теплый золотой`;
+      if (k < 4200) return `${k} K · Нейтральный`;
+      if (k < 5400) return `${k} K · Чистый лунный`;
+      return `${k} K · Полярный реголит`;
+    }
+
+    function getPhaseNameFromAngle(angle) {
+      const a = (angle % 360 + 360) % 360;
+      if (a >= 337.5 || a < 22.5) return "Новолуние";
+      if (a < 67.5) return "Растущий серп";
+      if (a < 112.5) return "Первая четверть";
+      if (a < 157.5) return "Растущая Луна";
+      if (a < 202.5) return "Полнолуние";
+      if (a < 247.5) return "Убывающая Луна";
+      if (a < 292.5) return "Последняя четверть";
+      return "Убывающий серп";
     }
 
     function renderUI() {
       // Power state
-      powerBtn.className = state.power ? "power-btn on" : "power-btn";
-      powerText.textContent = state.power ? "Лампа включена" : "Лампа выключена";
+      powerChassis.classList.toggle('active', state.power);
+      switchToggle.setAttribute('aria-checked', state.power);
+      powerStatusSub.textContent = state.power ? "Активно · 5V FCOB" : "В режиме ожидания";
 
       // Brightness & Kelvin
       brightSlider.value = state.brightness;
       brightVal.textContent = Math.round((state.brightness / 255) * 100) + "%";
+      updateSliderFill(brightSlider);
+
       kelvinSlider.value = state.kelvin;
       kelvinVal.textContent = getKelvinDesc(state.kelvin);
+      updateSliderFill(kelvinSlider);
 
-      // Mode visibility
-      modeTabs.forEach(tab => {
-        const m = parseInt(tab.dataset.mode);
-        tab.classList.toggle('active', (state.mode === m) || (state.mode >= 2 && m === 2));
+      // Kelvin ticks active state
+      kelvinTicks.forEach(tick => {
+        const k = parseInt(tick.dataset.k);
+        tick.classList.toggle('active', Math.abs(state.kelvin - k) < 300);
       });
 
-      manualPhaseBox.style.display = (state.mode === 1) ? "flex" : "none";
-      effectsBox.style.display = (state.mode >= 2) ? "grid" : "none";
+      // Mode navigation
+      modeBtns.forEach(btn => {
+        const m = parseInt(btn.dataset.mode);
+        btn.classList.toggle('active', (state.mode === m) || (state.mode >= 2 && m === 2));
+      });
+
+      manualPhaseDeck.style.display = (state.mode === 1) ? "flex" : "none";
+      effectsDeck.style.display = (state.mode >= 2) ? "grid" : "none";
 
       if (state.mode >= 2) {
-        effectBtns.forEach(btn => {
-          btn.classList.toggle('active', parseInt(btn.dataset.eff) === state.mode);
+        effectCards.forEach(card => {
+          card.classList.toggle('active', parseInt(card.dataset.eff) === state.mode);
         });
       }
 
-      // Moon Visor update
-      const curAngle = (state.mode === 1) ? state.manualAngle : state.phaseAngle;
-      updateMoonVisor(curAngle);
+      // Moon Visor rendering
+      const activeAngle = (state.mode === 1) ? state.manualAngle : state.phaseAngle;
+      updateMoonVisor(activeAngle);
 
       manualPhaseSlider.value = Math.round(state.manualAngle);
-      manualAngleVal.textContent = Math.round(state.manualAngle) + "°";
+      manualAngleVal.textContent = Math.round(state.manualAngle) + "° (" + getPhaseNameFromAngle(state.manualAngle) + ")";
+      updateSliderFill(manualPhaseSlider);
 
-      // Phase chips active state
-      phaseChips.forEach(chip => {
+      // Phase dial complication chips
+      phaseDialChips.forEach(chip => {
         const ca = parseInt(chip.dataset.angle);
-        chip.classList.toggle('active', Math.abs(curAngle - ca) < 22.5);
+        chip.classList.toggle('active', Math.abs(activeAngle - ca) < 22.5);
       });
 
-      // Telemetry
-      moonPhaseName.textContent = state.phaseName;
-      illuminationVal.textContent = (state.illumination * 100).toFixed(1) + "% освещенности";
-      lunarAgeVal.textContent = state.ageDays.toFixed(1) + " из 29.5 дней";
+      // Textual Phase & Telemetry
+      if (state.mode === 1) {
+        moonPhaseName.textContent = getPhaseNameFromAngle(state.manualAngle);
+        const ill = ((1 - Math.cos(state.manualAngle * Math.PI / 180)) / 2 * 100).toFixed(1);
+        illuminationVal.textContent = ill + "%";
+        lunarAgeVal.textContent = "Ручной угол " + Math.round(state.manualAngle) + "°";
+      } else {
+        moonPhaseName.textContent = state.phaseName;
+        illuminationVal.textContent = (state.illumination * 100).toFixed(1) + "%";
+        lunarAgeVal.textContent = state.ageDays.toFixed(1) + " из 29.5 дней";
+      }
 
       teleSun.textContent = `${state.sunrise} / ${state.sunset}`;
-      teleDayPhase.textContent = state.dayPhase;
-      teleIllum.textContent = (state.illumination * 100).toFixed(1) + "%";
-      teleSide.textContent = state.isWaxing ? "Справа (Растущая)" : "Слева (Убывающая)";
+      teleDayPhase.textContent = `${state.dayPhase} · CET`;
+      telePhaseAngle.textContent = activeAngle.toFixed(1) + "°";
 
+      const isWax = (state.mode === 1) ? (state.manualAngle < 180) : state.isWaxing;
+      teleSide.textContent = isWax ? "Справа" : "Слева";
+      teleSideSub.textContent = isWax ? "Растущая фаза" : "Убывающая фаза";
+
+      // Hardware Sliders
       ledCountSlider.value = state.ledCount;
       ledCountVal.textContent = state.ledCount + " шт";
+      updateSliderFill(ledCountSlider);
+
       offsetSlider.value = state.offsetAngle;
       offsetAngleVal.textContent = state.offsetAngle + "°";
+      updateSliderFill(offsetSlider);
     }
+
+    // Interactive Moon Visor Touch & Drag
+    let isDraggingMoon = false;
+    let startX = 0;
+    let startAngle = 0;
+
+    moonDial.addEventListener('pointerdown', (e) => {
+      isDraggingMoon = true;
+      startX = e.clientX;
+      startAngle = (state.mode === 1) ? state.manualAngle : state.phaseAngle;
+      moonDial.setPointerCapture(e.pointerId);
+      haptic(10);
+    });
+
+    moonDial.addEventListener('pointermove', (e) => {
+      if (!isDraggingMoon) return;
+      const dx = e.clientX - startX;
+      // 1px delta = 1.2 degrees
+      let newAngle = (startAngle + dx * 1.2) % 360;
+      if (newAngle < 0) newAngle += 360;
+      
+      state.manualAngle = newAngle;
+      if (state.mode !== 1) {
+        state.mode = 1;
+        sendCmd({ cmd: "setMode", mode: 1 });
+      }
+      renderUI();
+      sendCmd({ cmd: "setManualPhase", angle: state.manualAngle });
+    });
+
+    moonDial.addEventListener('pointerup', (e) => {
+      if (isDraggingMoon) {
+        isDraggingMoon = false;
+        try { moonDial.releasePointerCapture(e.pointerId); } catch (err) {}
+      }
+    });
+
+    moonDial.addEventListener('pointercancel', (e) => {
+      isDraggingMoon = false;
+    });
+
+    // Real-time clock updater
+    setInterval(() => {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      teleLocalTime.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }, 1000);
 
     // WebSockets Communication
     let ws = null;
@@ -811,19 +1506,14 @@
         statusPill.classList.add('online');
         statusText.textContent = "В сети";
         if (wsTimer) clearTimeout(wsTimer);
-        // Request initial state
         sendCmd({ cmd: "getState" });
       };
 
       ws.onmessage = (evt) => {
         try {
           const msg = JSON.parse(evt.data);
-          if (msg.state) {
-            Object.assign(state, msg.state);
-          }
-          if (msg.telemetry) {
-            Object.assign(state, msg.telemetry);
-          }
+          if (msg.state) Object.assign(state, msg.state);
+          if (msg.telemetry) Object.assign(state, msg.telemetry);
           renderUI();
         } catch (err) {
           console.error("JSON parse error:", err);
@@ -852,9 +1542,10 @@
       }
     }
 
-    // Event Handlers
-    powerBtn.addEventListener('click', () => {
+    // Event Listeners
+    powerChassis.addEventListener('click', () => {
       state.power = !state.power;
+      haptic(12);
       renderUI();
       sendCmd({ cmd: "setPower", power: state.power });
     });
@@ -862,6 +1553,7 @@
     brightSlider.addEventListener('input', (e) => {
       state.brightness = parseInt(e.target.value);
       brightVal.textContent = Math.round((state.brightness / 255) * 100) + "%";
+      updateSliderFill(brightSlider);
       updateMoonVisor(state.mode === 1 ? state.manualAngle : state.phaseAngle);
       sendCmd({ cmd: "setBrightness", brightness: state.brightness });
     });
@@ -869,39 +1561,54 @@
     kelvinSlider.addEventListener('input', (e) => {
       state.kelvin = parseInt(e.target.value);
       kelvinVal.textContent = getKelvinDesc(state.kelvin);
+      updateSliderFill(kelvinSlider);
       updateMoonVisor(state.mode === 1 ? state.manualAngle : state.phaseAngle);
       sendCmd({ cmd: "setKelvin", kelvin: state.kelvin });
     });
 
+    kelvinTicks.forEach(tick => {
+      tick.addEventListener('click', () => {
+        const k = parseInt(tick.dataset.k);
+        state.kelvin = k;
+        haptic(8);
+        renderUI();
+        sendCmd({ cmd: "setKelvin", kelvin: state.kelvin });
+      });
+    });
+
     manualPhaseSlider.addEventListener('input', (e) => {
       state.manualAngle = parseFloat(e.target.value);
-      manualAngleVal.textContent = Math.round(state.manualAngle) + "°";
+      manualAngleVal.textContent = Math.round(state.manualAngle) + "° (" + getPhaseNameFromAngle(state.manualAngle) + ")";
+      updateSliderFill(manualPhaseSlider);
       updateMoonVisor(state.manualAngle);
       sendCmd({ cmd: "setManualPhase", angle: state.manualAngle });
     });
 
-    modeTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const m = parseInt(tab.dataset.mode);
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const m = parseInt(btn.dataset.mode);
         state.mode = m;
+        haptic(10);
         renderUI();
         sendCmd({ cmd: "setMode", mode: m });
       });
     });
 
-    effectBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const eff = parseInt(btn.dataset.eff);
+    effectCards.forEach(card => {
+      card.addEventListener('click', () => {
+        const eff = parseInt(card.dataset.eff);
         state.mode = eff;
+        haptic(10);
         renderUI();
         sendCmd({ cmd: "setMode", mode: eff });
       });
     });
 
-    phaseChips.forEach(chip => {
+    phaseDialChips.forEach(chip => {
       chip.addEventListener('click', () => {
-        state.mode = 1; // Switch to manual
+        state.mode = 1;
         state.manualAngle = parseFloat(chip.dataset.angle);
+        haptic(10);
         renderUI();
         sendCmd({ cmd: "setMode", mode: 1 });
         sendCmd({ cmd: "setManualPhase", angle: state.manualAngle });
@@ -911,16 +1618,18 @@
     ledCountSlider.addEventListener('input', (e) => {
       state.ledCount = parseInt(e.target.value);
       ledCountVal.textContent = state.ledCount + " шт";
+      updateSliderFill(ledCountSlider);
       sendCmd({ cmd: "setLedCount", count: state.ledCount });
     });
 
     offsetSlider.addEventListener('input', (e) => {
       state.offsetAngle = parseInt(e.target.value);
       offsetAngleVal.textContent = state.offsetAngle + "°";
+      updateSliderFill(offsetSlider);
       sendCmd({ cmd: "setOffsetAngle", offset: state.offsetAngle });
     });
 
-    // Start
+    // Initialize UI
     renderUI();
     connectWS();
   </script>
