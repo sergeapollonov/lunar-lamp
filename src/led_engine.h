@@ -31,7 +31,7 @@ class LedEngine {
 public:
     LedEngine();
 
-    void begin(uint16_t ledCount = 60);
+    void begin(uint16_t ledCount = 252);
     void update(const MoonTelemetry& moon, const SunTelemetry& sun);
 
     // Управление состоянием

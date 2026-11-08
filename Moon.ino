@@ -49,8 +49,8 @@ void setup() {
     Serial.println("           Stage 2: Artisan Web UI & LED Engine           ");
     Serial.println("==========================================================");
 
-    // Инициализация светодиодного движка (по умолчанию 60 диодов, меняется в веб-интерфейсе)
-    ledEngine.begin(60);
+    // Инициализация светодиодного движка (по умолчанию 252 диода FCOB, старт на 12 часов)
+    ledEngine.begin(252);
     Serial.println("[OK] FastLED Engine initialized (Power Cap: 5V 2500mA).");
 
     // Подключение к Wi-Fi

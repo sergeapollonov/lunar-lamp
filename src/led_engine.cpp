@@ -11,8 +11,8 @@ LedEngine::LedEngine() {
     _state.kelvin = 4000; // Нейтральный лунный свет
     _state.mode = LAMP_MODE_LIVE_ASTRONOMY;
     _state.manualPhaseAngle = 180.0;
-    _state.ledCount = 60;
-    _state.zeroAngleOffset = 0;
+    _state.ledCount = 252;
+    _state.zeroAngleOffset = 0; // 0° = 12 часов (старт и конец ленты в верхней точке)
 }
 
 void LedEngine::begin(uint16_t ledCount) {
@@ -59,6 +59,7 @@ void LedEngine::setLedCount(uint16_t count) {
     if (count > MAX_LEDS) count = MAX_LEDS;
     if (count < 10) count = 10;
     _state.ledCount = count;
+    FastLED.clear();
 }
 
 void LedEngine::setZeroAngleOffset(int16_t offsetDeg) {
