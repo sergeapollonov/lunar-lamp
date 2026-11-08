@@ -2,8 +2,10 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#060709">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#060709">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#060709">
+  <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Lunar Lamp — Observatory Core</title>
@@ -16,9 +18,9 @@
       --card-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(255, 255, 255, 0.05);
       
       --text-primary: #F8FAFC;
-      --text-secondary: #94A3B8;
-      --text-muted: #64748B;
-      --text-dim: #475569;
+      --text-secondary: #CBD5E1;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
       
       --accent-glow: rgba(226, 232, 240, 0.28);
       --amber-warm: #F59E0B;
@@ -39,11 +41,18 @@
       --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
     }
 
+    html, body {
+      overscroll-behavior: none;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    button, [role="button"], input, .switch-toggle, .phase-dial-chip, .moon-dial-wrapper, .tick-item {
       user-select: none;
       -webkit-user-select: none;
     }
@@ -55,17 +64,23 @@
         radial-gradient(circle at 50% 100%, rgba(245, 158, 11, 0.03) 0%, transparent 50%);
       color: var(--text-primary);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       justify-content: center;
-      padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 24px);
+      padding: 16px 16px 24px;
+      padding-top: max(16px, env(safe-area-inset-top, 16px));
+      padding-right: max(16px, env(safe-area-inset-right, 16px));
+      padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+      padding-left: max(16px, env(safe-area-inset-left, 16px));
       overflow-x: hidden;
       letter-spacing: -0.01em;
     }
 
     .container {
       width: 100%;
-      max-width: 440px;
+      max-width: 398px;
+      margin: 0 auto;
+      min-width: 0;
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -144,6 +159,7 @@
       font-size: 11.5px;
       font-weight: 500;
       color: var(--text-muted);
+      flex-shrink: 0;
       transition: color 180ms var(--ease-out), border-color 180ms var(--ease-out);
     }
     .status-dot {
@@ -170,7 +186,7 @@
       -webkit-backdrop-filter: blur(24px);
       border: 1px solid var(--card-border);
       border-radius: var(--radius-xl);
-      padding: 20px;
+      padding: 18px 16px;
       box-shadow: var(--card-shadow);
       position: relative;
     }
@@ -188,7 +204,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 30px 20px 24px;
+      padding: 26px 16px 22px;
       overflow: hidden;
       text-align: center;
     }
@@ -337,16 +353,17 @@
       background: transparent;
       border: 1px solid transparent;
       color: var(--text-secondary);
-      padding: 10px 6px;
+      padding: 9px 4px;
       border-radius: var(--radius-md);
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.01em;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
+      gap: 5px;
+      white-space: nowrap;
       transition: color 160ms var(--ease-out), background 160ms var(--ease-out), border-color 160ms var(--ease-out), transform 120ms var(--ease-out);
     }
     .mode-btn:active {
@@ -443,7 +460,7 @@
       box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
     }
     .power-chassis.active .switch-thumb {
-      transform: translateX(22px);
+      transform: translateX(24px);
     }
 
     /* Controls Stack */
@@ -462,6 +479,8 @@
       display: flex;
       justify-content: space-between;
       align-items: baseline;
+      gap: 8px;
+      min-width: 0;
     }
     .control-title {
       font-size: 11px;
@@ -472,12 +491,18 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .control-value {
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 600;
       font-variant-numeric: tabular-nums;
       color: #FFF;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: right;
     }
 
     /* Range Slider Styling complying with modern-web-guidance */
@@ -588,18 +613,24 @@
     .scale-ticks {
       display: flex;
       justify-content: space-between;
-      padding: 0 4px;
+      padding: 4px 2px;
       margin-top: -2px;
     }
     .tick-item {
-      font-size: 10px;
-      font-weight: 500;
+      font-size: 11px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
       color: var(--text-dim);
+      padding: 4px 2px;
       cursor: pointer;
+      touch-action: manipulation;
       transition: color 140ms var(--ease-out);
     }
-    .tick-item:hover, .tick-item.active {
-      color: #E2E8F0;
+    @media (hover: hover) and (pointer: fine) {
+      .tick-item:hover { color: #E2E8F0; }
+    }
+    .tick-item.active {
+      color: #FFF;
     }
 
     /* Precision Astronomical Complication Chips (Manual Phase) */
@@ -627,9 +658,15 @@
       transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 160ms var(--ease-out);
     }
     .phase-dial-chip:active {
-      transform: scale(0.92);
+      transform: scale(0.96);
     }
-    .phase-dial-chip:hover, .phase-dial-chip.active {
+    @media (hover: hover) and (pointer: fine) {
+      .phase-dial-chip:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+    }
+    .phase-dial-chip.active {
       background: rgba(255, 255, 255, 0.12);
       border-color: rgba(255, 255, 255, 0.3);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -790,6 +827,14 @@
       gap: 16px;
       border-top: 1px solid rgba(255, 255, 255, 0.04);
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -812,7 +857,7 @@
       </div>
       <div id="statusPill" class="status-pill">
         <span class="status-dot"></span>
-        <span id="statusText">Подключение...</span>
+        <span id="statusText">Поиск...</span>
       </div>
     </header>
 
@@ -990,19 +1035,19 @@
             <svg class="icon icon-sm" viewBox="0 0 24 24">
               <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
             </svg>
-            Цветовая температура
+            Температура
           </span>
-          <span id="kelvinVal" class="control-value">4000 K · Нейтральный</span>
+          <span id="kelvinVal" class="control-value">4000K · Нейтральный</span>
         </div>
         <div class="slider-wrap">
           <input id="kelvinSlider" class="artisan-slider kelvin-slider" type="range" min="2000" max="6500" step="50" value="4000">
         </div>
         <div class="scale-ticks">
-          <span class="tick-item" data-k="2200">2200K Теплый</span>
+          <span class="tick-item" data-k="2200">2200K</span>
           <span class="tick-item" data-k="3200">3200K</span>
-          <span class="tick-item active" data-k="4000">4000K Лунный</span>
+          <span class="tick-item active" data-k="4000">4000K</span>
           <span class="tick-item" data-k="5500">5500K</span>
-          <span class="tick-item" data-k="6500">6500K Холодный</span>
+          <span class="tick-item" data-k="6500">6500K</span>
         </div>
       </div>
 
@@ -1317,22 +1362,23 @@
     // Physical Moon Terminator Calculation
     function updateMoonVisor(angleDeg) {
       const R = 92;
-      const rad = (angleDeg * Math.PI) / 180;
+      const a = ((angleDeg % 360) + 360) % 360;
+      const rad = (a * Math.PI) / 180;
       const rx = Math.abs(R * Math.cos(rad));
 
       let d = "";
-      if (angleDeg <= 90) {
-        // Waxing crescent
-        d = `M 0 -${R} A ${R} ${R} 0 0 1 0 ${R} A ${rx} ${R} 0 0 1 0 -${R} Z`;
-      } else if (angleDeg <= 180) {
-        // Waxing gibbous
+      if (a <= 90) {
+        // Waxing crescent: right limb (sweep=1), terminator curves left (sweep=0)
         d = `M 0 -${R} A ${R} ${R} 0 0 1 0 ${R} A ${rx} ${R} 0 0 0 0 -${R} Z`;
-      } else if (angleDeg <= 270) {
-        // Waning gibbous
-        d = `M 0 -${R} A ${R} ${R} 0 0 0 0 ${R} A ${rx} ${R} 0 0 1 0 -${R} Z`;
-      } else {
-        // Waning crescent
+      } else if (a <= 180) {
+        // Waxing gibbous: right limb (sweep=1), terminator curves right (sweep=1)
+        d = `M 0 -${R} A ${R} ${R} 0 0 1 0 ${R} A ${rx} ${R} 0 0 1 0 -${R} Z`;
+      } else if (a <= 270) {
+        // Waning gibbous: left limb (sweep=0), terminator curves left (sweep=0)
         d = `M 0 -${R} A ${R} ${R} 0 0 0 0 ${R} A ${rx} ${R} 0 0 0 0 -${R} Z`;
+      } else {
+        // Waning crescent: left limb (sweep=0), terminator curves right (sweep=1)
+        d = `M 0 -${R} A ${R} ${R} 0 0 0 0 ${R} A ${rx} ${R} 0 0 1 0 -${R} Z`;
       }
       terminatorShape.setAttribute("d", d);
 
@@ -1350,11 +1396,11 @@
     }
 
     function getKelvinDesc(k) {
-      if (k < 2400) return `${k} K · Свечной свет`;
-      if (k < 3200) return `${k} K · Теплый золотой`;
-      if (k < 4200) return `${k} K · Нейтральный`;
-      if (k < 5400) return `${k} K · Чистый лунный`;
-      return `${k} K · Полярный реголит`;
+      if (k < 2400) return `${k}K · Свечной`;
+      if (k < 3200) return `${k}K · Теплый`;
+      if (k < 4200) return `${k}K · Нейтральный`;
+      if (k < 5400) return `${k}K · Лунный`;
+      return `${k}K · Полярный`;
     }
 
     function getPhaseNameFromAngle(angle) {
@@ -1531,7 +1577,7 @@
 
       ws.onclose = () => {
         statusPill.classList.remove('online');
-        statusText.textContent = "Переподключение...";
+        statusText.textContent = "Поиск...";
         scheduleReconnect();
       };
 
