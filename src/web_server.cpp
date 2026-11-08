@@ -1,8 +1,8 @@
 #include "web_server.h"
 #include "web_assets.h"
 
-LampWebServer::LampWebServer(LedEngine& ledEngine, AstronomyEngine& astroEngine)
-    : _httpServer(80), _wsServer(81), _leds(ledEngine), _astro(astroEngine), _lastTeleBroadcast(0) {}
+LampWebServer::LampWebServer(LedEngine& ledEngine, AstronomyEngine& astroEngine, SettingsManager& settings)
+    : _httpServer(80), _wsServer(81), _leds(ledEngine), _astro(astroEngine), _settings(settings), _lastTeleBroadcast(0) {}
 
 void LampWebServer::begin() {
     // HTTP маршрут отдачи сжатого веб-интерфейса
@@ -69,34 +69,47 @@ void LampWebServer::handleJsonCommand(uint8_t clientNum, const String& jsonStr) 
     } else if (strcmp(cmd, "setPower") == 0) {
         _leds.setPower(doc["power"] | true);
         broadcastState();
+        _settings.scheduleSave();
     } else if (strcmp(cmd, "setBrightness") == 0) {
         _leds.setBrightness(doc["brightness"] | 180);
         broadcastState();
+        _settings.scheduleSave();
     } else if (strcmp(cmd, "setKelvin") == 0) {
         _leds.setKelvin(doc["kelvin"] | 4000);
         broadcastState();
+        _settings.scheduleSave();
     } else if (strcmp(cmd, "setMode") == 0) {
         _leds.setMode((LampMode)(doc["mode"] | 0));
         broadcastState();
+        _settings.scheduleSave();
     } else if (strcmp(cmd, "setManualPhase") == 0) {
         _leds.setManualPhase(doc["angle"] | 180.0);
         broadcastState();
+        _settings.scheduleSave();
     } else if (strcmp(cmd, "setLedCount") == 0) {
         _leds.setLedCount(doc["count"] | 252);
         broadcastState();
+        _settings.scheduleSave();
     } else if (strcmp(cmd, "setOffsetAngle") == 0) {
         _leds.setZeroAngleOffset(doc["offset"] | 0);
         broadcastState();
+        _settings.scheduleSave();
     } else if (strcmp(cmd, "setAutoSunset") == 0) {
         _leds.setAutoSunset(doc["enabled"] | true);
         broadcastState();
+        _settings.scheduleSave();
     } else if (strcmp(cmd, "setAutoOff") == 0) {
         _leds.setAutoOff(doc["enabled"] | true);
         broadcastState();
+        _settings.scheduleSave();
     } else if (strcmp(cmd, "setAutoOffTime") == 0) {
         uint8_t h = doc["hour"] | 1;
         uint8_t m = doc["minute"] | 0;
         _leds.setAutoOffTime(h, m);
+        broadcastState();
+        _settings.scheduleSave();
+    } else if (strcmp(cmd, "resetDefaults") == 0) {
+        _settings.resetToDefaults(_leds, _astro);
         broadcastState();
     }
 }

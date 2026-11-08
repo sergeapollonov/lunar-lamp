@@ -983,6 +983,31 @@
       color: #C7D2FE;
     }
 
+    .artisan-reset-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #FCA5A5;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: all 160ms var(--ease-out);
+    }
+    .artisan-reset-btn:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #FFF;
+    }
+    .artisan-reset-btn:active {
+      transform: scale(0.98);
+    }
+
     @keyframes fadeInDown {
       from { opacity: 0; transform: translateY(-6px); }
       to { opacity: 1; transform: translateY(0); }
@@ -1482,6 +1507,14 @@
             <input id="offsetSlider" class="artisan-slider" type="range" min="0" max="359" value="0">
           </div>
         </div>
+
+        <button id="resetDefaultsBtn" class="artisan-reset-btn" type="button">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          Сбросить к заводским настройкам
+        </button>
       </div>
     </details>
 
@@ -1961,6 +1994,14 @@
           sendCmd({ cmd: "setAutoOffTime", hour: state.autoOffHour, minute: state.autoOffMinute });
         }
       });
+    });
+
+    const resetDefaultsBtn = document.getElementById('resetDefaultsBtn');
+    resetDefaultsBtn.addEventListener('click', () => {
+      if (confirm("Сбросить все параметры и калибровку к заводским?")) {
+        haptic(15);
+        sendCmd({ cmd: "resetDefaults" });
+      }
     });
 
     // Initialize UI

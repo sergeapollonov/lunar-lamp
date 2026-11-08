@@ -6,10 +6,11 @@
 #include <ArduinoJson.h>
 #include "led_engine.h"
 #include "astronomy.h"
+#include "settings_manager.h"
 
 class LampWebServer {
 public:
-    LampWebServer(LedEngine& ledEngine, AstronomyEngine& astroEngine);
+    LampWebServer(LedEngine& ledEngine, AstronomyEngine& astroEngine, SettingsManager& settings);
 
     void begin();
     void update(const MoonTelemetry& moon, const SunTelemetry& sun);
@@ -22,6 +23,7 @@ private:
     WebSocketsServer _wsServer;
     LedEngine& _leds;
     AstronomyEngine& _astro;
+    SettingsManager& _settings;
 
     unsigned long _lastTeleBroadcast;
 

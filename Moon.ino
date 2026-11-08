@@ -11,6 +11,7 @@
 #include "src/astronomy.h"
 #include "src/time_sync.h"
 #include "src/led_engine.h"
+#include "src/settings_manager.h"
 #include "src/web_server.h"
 
 // Локальный файл с настройками сети (добавлен в .gitignore)
@@ -30,7 +31,8 @@ const int LED_STATUS_PIN = 2; // Синий диод ESP32
 AstronomyEngine astro(DEFAULT_LAT, DEFAULT_LON);
 TimeSync timeSync;
 LedEngine ledEngine;
-LampWebServer webServer(ledEngine, astro);
+SettingsManager settingsManager;
+LampWebServer webServer(ledEngine, astro, settingsManager);
 
 unsigned long lastTelemetryTime = 0;
 const unsigned long TELEMETRY_INTERVAL_MS = 5 * 60 * 1000UL; // Перерасчет астрономии каждые 5 минут
@@ -111,9 +113,13 @@ void setup() {
     Serial.println("           Stage 2: Artisan Web UI & LED Engine           ");
     Serial.println("==========================================================");
 
+    // Загрузка настроек из энергонезависимой памяти (NVS)
+    settingsManager.begin(ledEngine, astro);
+
     // Инициализация светодиодного движка (по умолчанию 252 диода FCOB, старт на 12 часов)
-    ledEngine.begin(252);
-    Serial.println("[OK] FastLED Engine initialized (Power Cap: 5V 2500mA).");
+    ledEngine.begin(ledEngine.getState().ledCount);
+    Serial.printf("[OK] FastLED Engine initialized (%u LEDs, Power Cap: 5V 2500mA).\n",
+                  ledEngine.getState().ledCount);
 
     // Подключение к Wi-Fi
     if (String(WIFI_SSID) != "YOUR_WIFI_SSID") {
@@ -193,6 +199,9 @@ void setup() {
 
 void loop() {
     unsigned long now = millis();
+
+    // Обработка отложенного сохранения настроек в Flash (debouncing 2 сек)
+    settingsManager.update(ledEngine, astro);
 
     // Обновление веб-сервера (HTTP клиенты и WebSockets)
     webServer.update(currentMoon, currentSun);
