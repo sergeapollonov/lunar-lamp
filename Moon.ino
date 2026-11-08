@@ -7,14 +7,16 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <ESPmDNS.h>
 #include "src/astronomy.h"
 #include "src/time_sync.h"
+#include "src/led_engine.h"
+#include "src/web_server.h"
 
-// Если есть локальный файл credentials.h с настройками Wi-Fi - подключаем его
+// Локальный файл с настройками сети (добавлен в .gitignore)
 #if __has_include("credentials.h")
 #include "credentials.h"
 #else
-// Замените на ваши учетные данные домашнего Wi-Fi
 const char* WIFI_SSID = "YOUR_WIFI_SSID";
 const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 #endif
@@ -27,9 +29,14 @@ const int LED_STATUS_PIN = 2; // Синий диод ESP32
 
 AstronomyEngine astro(DEFAULT_LAT, DEFAULT_LON);
 TimeSync timeSync;
+LedEngine ledEngine;
+LampWebServer webServer(ledEngine, astro);
 
 unsigned long lastTelemetryTime = 0;
 const unsigned long TELEMETRY_INTERVAL_MS = 5000;
+
+MoonTelemetry currentMoon;
+SunTelemetry currentSun;
 
 void setup() {
     Serial.begin(115200);
@@ -39,8 +46,12 @@ void setup() {
     Serial.println("\n");
     Serial.println("==========================================================");
     Serial.println("       🌕 LUNAR LAMP — SMART WALL ILLUMINATION 🌕         ");
-    Serial.println("              Stage 1: Core Astronomy Engine             ");
+    Serial.println("           Stage 2: Artisan Web UI & LED Engine           ");
     Serial.println("==========================================================");
+
+    // Инициализация светодиодного движка (по умолчанию 60 диодов, меняется в веб-интерфейсе)
+    ledEngine.begin(60);
+    Serial.println("[OK] FastLED Engine initialized (Power Cap: 5V 2500mA).");
 
     // Подключение к Wi-Fi
     if (String(WIFI_SSID) != "YOUR_WIFI_SSID") {
@@ -50,33 +61,63 @@ void setup() {
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
         int attempts = 0;
-        while (WiFi.status() != WL_CONNECTED && attempts < 20) {
-            delay(500);
+        while (WiFi.status() != WL_CONNECTED && attempts < 25) {
+            delay(400);
             digitalWrite(LED_STATUS_PIN, !digitalRead(LED_STATUS_PIN));
             Serial.print(".");
             attempts++;
         }
 
         if (WiFi.status() == WL_CONNECTED) {
-            Serial.println("\n[OK] Wi-Fi connected! IP: " + WiFi.localIP().toString());
+            Serial.println("\n[OK] Wi-Fi connected! IP address: " + WiFi.localIP().toString());
             digitalWrite(LED_STATUS_PIN, HIGH);
             
-            // Запуск синхронизации точного времени по NTP
+            // Синхронизация времени NTP
             timeSync.begin();
             Serial.println("[OK] NTP Time Synchronization started.");
+
+            // Запуск mDNS (доступно по адресу http://moon.local)
+            if (MDNS.begin("moon")) {
+                Serial.println("[OK] mDNS responder started: http://moon.local");
+            }
+
+            // Запуск веб-сервера и WebSockets
+            webServer.begin();
         } else {
-            Serial.println("\n[WARN] Wi-Fi connection timed out. Running in offline demo mode.");
+            Serial.println("\n[WARN] Wi-Fi connection timed out. Starting fallback AP mode...");
+            WiFi.mode(WIFI_AP);
+            WiFi.softAP("Moon-Lamp-Setup", "12345678");
+            Serial.println("[OK] Fallback AP created: 'Moon-Lamp-Setup' (IP: 192.168.4.1)");
+            webServer.begin();
             digitalWrite(LED_STATUS_PIN, LOW);
         }
     } else {
-        Serial.println("[INFO] Wi-Fi credentials not configured yet.");
-        Serial.println("[INFO] You can set WIFI_SSID and WIFI_PASSWORD in Moon.ino or credentials.h");
-        Serial.println("[INFO] Running astronomy calculation on default system epoch.\n");
+        Serial.println("[INFO] Wi-Fi credentials not configured in credentials.h.");
+        Serial.println("[INFO] Starting Access Point: 'Moon-Lamp-Setup' (192.168.4.1)");
+        WiFi.mode(WIFI_AP);
+        WiFi.softAP("Moon-Lamp-Setup", "12345678");
+        webServer.begin();
     }
+
+    // Первичный расчет астрономии
+    time_t utcNow = timeSync.getUtcEpoch();
+    struct tm localTm = timeSync.getLocalTime();
+    int tzOffset = timeSync.getTimezoneOffsetMinutes();
+
+    currentMoon = astro.calculateMoon(utcNow);
+    currentSun = astro.calculateSun(localTm, tzOffset);
 }
 
 void loop() {
     unsigned long now = millis();
+
+    // Обновление веб-сервера (HTTP клиенты и WebSockets)
+    webServer.update(currentMoon, currentSun);
+
+    // Обновление светодиодного движка (рендеринг фазы или эффекта)
+    ledEngine.update(currentMoon, currentSun);
+
+    // Периодический перерасчет астрономии и вывод телеметрии
     if (now - lastTelemetryTime >= TELEMETRY_INTERVAL_MS) {
         lastTelemetryTime = now;
 
@@ -84,28 +125,13 @@ void loop() {
         struct tm localTm = timeSync.getLocalTime();
         int tzOffset = timeSync.getTimezoneOffsetMinutes();
 
-        MoonTelemetry moon = astro.calculateMoon(utcNow);
-        SunTelemetry sun = astro.calculateSun(localTm, tzOffset);
+        currentMoon = astro.calculateMoon(utcNow);
+        currentSun = astro.calculateSun(localTm, tzOffset);
 
-        Serial.println("----------------------------------------------------------");
-        Serial.printf(" 🕒 Локальное время:  %04d-%02d-%02d %02d:%02d:%02d\n",
-                      localTm.tm_year + 1900, localTm.tm_mon + 1, localTm.tm_mday,
-                      localTm.tm_hour, localTm.tm_min, localTm.tm_sec);
-        Serial.printf(" 🌘 Фаза Луны:        %s %s\n", astro.getAsciiMoon(moon.phaseType), moon.phaseNameRu);
-        Serial.printf(" 💡 Освещенность:     %.1f%%\n", moon.illumination * 100.0);
-        Serial.printf(" 📐 Фазовый угол:     %.1f° (Свет %s)\n", 
-                      moon.phaseAngleDeg, moon.isWaxing ? "СПРАВА (Растущая)" : "СЛЕВА (Убывающая)");
-        Serial.printf(" ⏳ Возраст Луны:     %.1f из 29.5 дней\n", moon.ageDays);
-        Serial.printf(" 🌅 Восход Солнца:    %02d:%02d\n", sun.sunriseHour, sun.sunriseMinute);
-        Serial.printf(" 🌇 Закат Солнца:     %02d:%02d\n", sun.sunsetHour, sun.sunsetMinute);
-        Serial.printf(" ☀️ Фаза суток:       %s\n", sun.dayPhaseNameRu);
-        Serial.println("----------------------------------------------------------");
-    }
-
-    // Ритмичное мерцание светодиода статуса (heartbeat)
-    static unsigned long lastBlink = 0;
-    if (millis() - lastBlink > 1000) {
-        lastBlink = millis();
-        digitalWrite(LED_STATUS_PIN, !digitalRead(LED_STATUS_PIN));
+        Serial.printf("[LUNAR] Phase: %s | Illum: %.1f%% | Angle: %.1f° | Sunset: %02d:%02d\n",
+                      astro.getAsciiMoon(currentMoon.phaseType),
+                      currentMoon.illumination * 100.0,
+                      currentMoon.phaseAngleDeg,
+                      currentSun.sunsetHour, currentSun.sunsetMinute);
     }
 }
