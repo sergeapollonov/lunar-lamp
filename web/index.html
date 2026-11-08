@@ -33,6 +33,10 @@
       /* Range slider tokens conforming to modern-web-guidance */
       --slider-track-size: 6px;
       --slider-thumb-size: 22px;
+
+      /* Emil Kowalski Design Engineering physics & motion tokens */
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
     }
 
     * {
@@ -140,7 +144,7 @@
       font-size: 11.5px;
       font-weight: 500;
       color: var(--text-muted);
-      transition: all 0.3s ease;
+      transition: color 180ms var(--ease-out), border-color 180ms var(--ease-out);
     }
     .status-dot {
       width: 6.5px;
@@ -148,7 +152,7 @@
       border-radius: 50%;
       background: #EAB308;
       box-shadow: 0 0 6px rgba(234, 179, 8, 0.6);
-      transition: all 0.3s ease;
+      transition: background 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
     }
     .status-pill.online .status-dot {
       background: var(--emerald-live);
@@ -197,7 +201,7 @@
       background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
       filter: blur(28px);
       opacity: 0.8;
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: background 250ms var(--ease-out), opacity 250ms var(--ease-out);
       pointer-events: none;
     }
 
@@ -245,7 +249,7 @@
       border-radius: 50%;
       position: relative;
       filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.75));
-      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 160ms var(--ease-out);
     }
     .moon-dial-wrapper:active .moon-visor {
       transform: scale(0.98);
@@ -272,7 +276,7 @@
       border: 1px solid rgba(255, 255, 255, 0.06);
       opacity: 0;
       transform: translateY(4px);
-      transition: all 0.3s ease;
+      transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out);
       pointer-events: none;
     }
     .moon-dial-wrapper:hover .scrub-hint,
@@ -343,7 +347,7 @@
       align-items: center;
       justify-content: center;
       gap: 7px;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: color 160ms var(--ease-out), background 160ms var(--ease-out), border-color 160ms var(--ease-out), transform 120ms var(--ease-out);
     }
     .mode-btn:active {
       transform: scale(0.97);
@@ -367,6 +371,11 @@
       border: 1px solid var(--card-border);
       border-radius: var(--radius-lg);
       box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+      cursor: pointer;
+      transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out), transform 120ms var(--ease-out);
+    }
+    .power-chassis:active {
+      transform: scale(0.98);
     }
     .power-label-group {
       display: flex;
@@ -383,7 +392,7 @@
       align-items: center;
       justify-content: center;
       color: var(--text-muted);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out), color 180ms var(--ease-out);
     }
     .power-text-block {
       display: flex;
@@ -410,7 +419,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       position: relative;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
     }
     .switch-thumb {
       width: 24px;
@@ -421,7 +430,7 @@
       position: absolute;
       top: 2px;
       left: 2px;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 180ms var(--ease-out);
     }
     .power-chassis.active .power-indicator {
       background: rgba(16, 185, 129, 0.12);
@@ -525,7 +534,7 @@
         inset 0 1px 1px #FFF;
       border: none;
       cursor: pointer;
-      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s;
+      transition: transform 140ms var(--ease-out), box-shadow 140ms var(--ease-out);
     }
     input[type="range"].artisan-slider:active::-webkit-slider-thumb {
       transform: scale(1.18);
@@ -587,7 +596,7 @@
       font-weight: 500;
       color: var(--text-dim);
       cursor: pointer;
-      transition: color 0.2s;
+      transition: color 140ms var(--ease-out);
     }
     .tick-item:hover, .tick-item.active {
       color: #E2E8F0;
@@ -615,7 +624,7 @@
       align-items: center;
       gap: 6px;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 160ms var(--ease-out);
     }
     .phase-dial-chip:active {
       transform: scale(0.92);
@@ -658,7 +667,7 @@
       align-items: flex-start;
       gap: 8px;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 180ms var(--ease-out);
       position: relative;
       overflow: hidden;
     }
@@ -682,7 +691,7 @@
       align-items: center;
       justify-content: center;
       color: #CBD5E1;
-      transition: all 0.3s;
+      transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out), color 180ms var(--ease-out);
     }
     .effect-card.active .effect-icon-box {
       background: rgba(255, 255, 255, 0.15);
@@ -766,7 +775,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: color 0.2s;
+      transition: color 140ms var(--ease-out);
     }
     summary.calibration-summary::-webkit-details-marker {
       display: none;
