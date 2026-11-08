@@ -1,0 +1,28 @@
+# Compiled Arduino & PlatformIO build artifacts
+*.o
+*.d
+*.elf
+*.bin
+*.hex
+build/
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Secrets & Local Configs
+credentials.h
+secrets.h
+config.local.h
+*.local
+
+# OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
