@@ -25,6 +25,10 @@ struct LampState {
     double manualPhaseAngle;    // Ручной угол фазы (0..360°)
     uint16_t ledCount;          // Фактическое количество светодиодов в лампе
     int16_t zeroAngleOffset;    // Смещение нулевого диода (0..360°)
+    bool autoSunset;            // Автоматическое включение на закате
+    bool autoOff;               // Автоматическое отключение по ночному таймеру
+    uint8_t autoOffHour;        // Час отключения (0..23, по умолчанию 1)
+    uint8_t autoOffMinute;      // Минута отключения (0..59, по умолчанию 0)
 };
 
 class LedEngine {
@@ -42,6 +46,9 @@ public:
     void setManualPhase(double phaseAngleDeg);
     void setLedCount(uint16_t count);
     void setZeroAngleOffset(int16_t offsetDeg);
+    void setAutoSunset(bool enabled);
+    void setAutoOff(bool enabled);
+    void setAutoOffTime(uint8_t hour, uint8_t minute);
 
     LampState getState() const { return _state; }
 

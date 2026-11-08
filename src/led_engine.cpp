@@ -13,6 +13,10 @@ LedEngine::LedEngine() {
     _state.manualPhaseAngle = 180.0;
     _state.ledCount = 252;
     _state.zeroAngleOffset = 0; // 0° = 12 часов (старт и конец ленты в верхней точке)
+    _state.autoSunset = true;
+    _state.autoOff = true;
+    _state.autoOffHour = 1;     // По умолчанию отключение в 01:00
+    _state.autoOffMinute = 0;
 }
 
 void LedEngine::begin(uint16_t ledCount) {
@@ -64,6 +68,21 @@ void LedEngine::setLedCount(uint16_t count) {
 
 void LedEngine::setZeroAngleOffset(int16_t offsetDeg) {
     _state.zeroAngleOffset = offsetDeg;
+}
+
+void LedEngine::setAutoSunset(bool enabled) {
+    _state.autoSunset = enabled;
+}
+
+void LedEngine::setAutoOff(bool enabled) {
+    _state.autoOff = enabled;
+}
+
+void LedEngine::setAutoOffTime(uint8_t hour, uint8_t minute) {
+    if (hour > 23) hour = 23;
+    if (minute > 59) minute = 59;
+    _state.autoOffHour = hour;
+    _state.autoOffMinute = minute;
 }
 
 double LedEngine::getLedAngleDeg(int index) {

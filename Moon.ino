@@ -35,8 +35,70 @@ LampWebServer webServer(ledEngine, astro);
 unsigned long lastTelemetryTime = 0;
 const unsigned long TELEMETRY_INTERVAL_MS = 5 * 60 * 1000UL; // Перерасчет астрономии каждые 5 минут
 
+int lastSunsetTriggerDay = -1;
+int lastAutoOffTriggerDay = -1;
+int lastSunriseTriggerDay = -1;
+unsigned long lastScheduleCheckTime = 0;
+const unsigned long SCHEDULE_CHECK_INTERVAL_MS = 10000; // Проверка расписания каждые 10 секунд
+
 MoonTelemetry currentMoon;
 SunTelemetry currentSun;
+
+void checkScheduleAutomation(const SunTelemetry& sun) {
+    if (!timeSync.isSynchronized()) return;
+
+    struct tm localTm = timeSync.getLocalTime();
+    int currentDay = localTm.tm_yday;
+    int currentMinutes = localTm.tm_hour * 60 + localTm.tm_min;
+
+    LampState s = ledEngine.getState();
+
+    // 1. Автоматическое включение на закате
+    if (s.autoSunset) {
+        if (currentMinutes >= sun.sunsetMinutes && currentMinutes < (sun.sunsetMinutes + 45)) {
+            if (lastSunsetTriggerDay != currentDay) {
+                lastSunsetTriggerDay = currentDay;
+                if (!s.power) {
+                    Serial.printf("[AUTO] Sunset reached (%02d:%02d) -> Turning Lamp ON\n",
+                                  sun.sunsetHour, sun.sunsetMinute);
+                    ledEngine.setPower(true);
+                    webServer.broadcastState();
+                }
+            }
+        }
+    }
+
+    // 2. Автоматическое отключение по ночному таймеру (например, 01:00)
+    if (s.autoOff) {
+        int targetOffMinutes = s.autoOffHour * 60 + s.autoOffMinute;
+        if (currentMinutes >= targetOffMinutes && currentMinutes < (targetOffMinutes + 45)) {
+            if (lastAutoOffTriggerDay != currentDay) {
+                lastAutoOffTriggerDay = currentDay;
+                if (s.power) {
+                    Serial.printf("[AUTO] Sleep timer reached (%02d:%02d) -> Turning Lamp OFF\n",
+                                  s.autoOffHour, s.autoOffMinute);
+                    ledEngine.setPower(false);
+                    webServer.broadcastState();
+                }
+            }
+        }
+    }
+
+    // 3. Автоматическое отключение на рассвете
+    if (s.autoSunset) {
+        if (currentMinutes >= sun.sunriseMinutes && currentMinutes < (sun.sunriseMinutes + 45)) {
+            if (lastSunriseTriggerDay != currentDay) {
+                lastSunriseTriggerDay = currentDay;
+                if (s.power) {
+                    Serial.printf("[AUTO] Sunrise reached (%02d:%02d) -> Turning Lamp OFF\n",
+                                  sun.sunriseHour, sun.sunriseMinute);
+                    ledEngine.setPower(false);
+                    webServer.broadcastState();
+                }
+            }
+        }
+    }
+}
 
 void setup() {
     Serial.begin(115200);
@@ -113,6 +175,19 @@ void setup() {
                   currentMoon.phaseAngleDeg,
                   currentSun.sunsetHour, currentSun.sunsetMinute);
 
+    // Если плата запустилась ночью после времени отбоя, но до рассвета
+    if (timeSync.isSynchronized()) {
+        LampState s = ledEngine.getState();
+        int currentMins = localTm.tm_hour * 60 + localTm.tm_min;
+        int targetOffMins = s.autoOffHour * 60 + s.autoOffMinute;
+        if (s.autoOff && currentMins >= targetOffMins && currentMins < currentSun.sunriseMinutes) {
+            Serial.printf("[AUTO] Booted during night sleep period (%02d:%02d) -> Setting Lamp OFF\n",
+                          s.autoOffHour, s.autoOffMinute);
+            ledEngine.setPower(false);
+            lastAutoOffTriggerDay = localTm.tm_yday;
+        }
+    }
+
     lastTelemetryTime = millis();
 }
 
@@ -124,6 +199,12 @@ void loop() {
 
     // Обновление светодиодного движка (рендеринг фазы или эффекта)
     ledEngine.update(currentMoon, currentSun);
+
+    // Проверка автоматических событий расписания (закат / ночной таймер / рассвет)
+    if (now - lastScheduleCheckTime >= SCHEDULE_CHECK_INTERVAL_MS) {
+        lastScheduleCheckTime = now;
+        checkScheduleAutomation(currentSun);
+    }
 
     // Периодический перерасчет астрономии (каждые 5 минут)
     if (now - lastTelemetryTime >= TELEMETRY_INTERVAL_MS) {

@@ -82,10 +82,21 @@ void LampWebServer::handleJsonCommand(uint8_t clientNum, const String& jsonStr) 
         _leds.setManualPhase(doc["angle"] | 180.0);
         broadcastState();
     } else if (strcmp(cmd, "setLedCount") == 0) {
-        _leds.setLedCount(doc["count"] | 60);
+        _leds.setLedCount(doc["count"] | 252);
         broadcastState();
     } else if (strcmp(cmd, "setOffsetAngle") == 0) {
         _leds.setZeroAngleOffset(doc["offset"] | 0);
+        broadcastState();
+    } else if (strcmp(cmd, "setAutoSunset") == 0) {
+        _leds.setAutoSunset(doc["enabled"] | true);
+        broadcastState();
+    } else if (strcmp(cmd, "setAutoOff") == 0) {
+        _leds.setAutoOff(doc["enabled"] | true);
+        broadcastState();
+    } else if (strcmp(cmd, "setAutoOffTime") == 0) {
+        uint8_t h = doc["hour"] | 1;
+        uint8_t m = doc["minute"] | 0;
+        _leds.setAutoOffTime(h, m);
         broadcastState();
     }
 }
@@ -102,6 +113,10 @@ void LampWebServer::broadcastState() {
     stateObj["manualAngle"] = s.manualPhaseAngle;
     stateObj["ledCount"] = s.ledCount;
     stateObj["offsetAngle"] = s.zeroAngleOffset;
+    stateObj["autoSunset"] = s.autoSunset;
+    stateObj["autoOff"] = s.autoOff;
+    stateObj["autoOffHour"] = s.autoOffHour;
+    stateObj["autoOffMinute"] = s.autoOffMinute;
 
     String out;
     serializeJson(doc, out);
