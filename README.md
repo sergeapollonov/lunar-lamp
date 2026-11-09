@@ -12,6 +12,8 @@ Based on the 3D-printable model: [Large Illuminated Lunar Wall Lamp V2 on MakerW
 * 🌅 **Solar Twilight & Auto-Dimming:** Automatically computes sunrise and sunset for your location, smoothly illuminating as dusk sets in and turning off at dawn.
 * 💡 **Continuous FCOB Neon Illumination:** Eliminates LED hotspots with seamless Chip-on-Board addressable RGB lighting.
 * 📱 **Crafted Web Interface (No AI Slop):** Self-contained, responsive, obsidian dark-themed web control panel running directly on the ESP32 via WebSockets with zero external dependencies.
+* 💾 **Persistent Flash Storage (NVS):** Automatically remembers your brightness, color temperature, 252-LED calibration, and night sleep schedule across power cuts with safe write debouncing.
+* 🔄 **Over-The-Air (OTA) Wireless Updates:** Upload compiled firmware binaries directly from any browser via `/update` without physical cables.
 * 🛡️ **Hardware Power Safety:** Built-in dynamic power budgeting capping power draw to 2500 mA on a 5V 3A power supply.
 
 ---
@@ -34,7 +36,7 @@ Detailed wiring diagrams and electrical specifications can be found in [docs/HAR
 - [x] **Stage 2:** LED Engine & Geometric Ring Mapping (Terminator anti-aliasing, color temperature 2200K–6500K, 252 FCOB, 12 o'clock zenith alignment).
 - [x] **Stage 3:** Premium Web UI (Photorealistic NASA LROC surface relief, interactive Moon dial, 8 complication dials, sunset auto-on & night sleep timer).
 - [x] **Stage 4:** WebSockets & Persistent Flash Storage (NVS / Preferences with 2s debounce, factory reset, bi-directional state sync).
-- [ ] **Stage 5:** Hardware assembly & physical calibration.
+- [x] **Stage 5:** Hardware assembly & wiring manual, Web OTA wireless update engine.
 
 ---
 
