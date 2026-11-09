@@ -30,10 +30,10 @@ Detailed wiring diagrams and electrical specifications can be found in [docs/HAR
 ## 🚀 Roadmap & Development Stages
 
 - [x] **Stage 0:** Repository setup, documentation, hardware specifications, and PR standards.
-- [ ] **Stage 1:** Core Astronomical Engine (Julian date, Moon phase angle, Illumination %, Sunrise/Sunset).
-- [ ] **Stage 2:** LED Engine & Geometric Ring Mapping (Terminator anti-aliasing, color temperature 2200K–6500K).
-- [ ] **Stage 3:** Premium Web UI (Interactive SVG moon, touch sliders, effect modes).
-- [ ] **Stage 4:** WebSockets & Persistent Flash Storage (NVS).
+- [x] **Stage 1:** Core Astronomical Engine (Julian date, Moon phase angle, Illumination %, Sunrise/Sunset).
+- [x] **Stage 2:** LED Engine & Geometric Ring Mapping (Terminator anti-aliasing, color temperature 2200K–6500K, 252 FCOB, 12 o'clock zenith alignment).
+- [x] **Stage 3:** Premium Web UI (Photorealistic NASA LROC surface relief, interactive Moon dial, 8 complication dials, sunset auto-on & night sleep timer).
+- [x] **Stage 4:** WebSockets & Persistent Flash Storage (NVS / Preferences with 2s debounce, factory reset, bi-directional state sync).
 - [ ] **Stage 5:** Hardware assembly & physical calibration.
 
 ---
