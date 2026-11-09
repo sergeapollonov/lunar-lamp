@@ -47,6 +47,8 @@ public:
     AstronomyEngine(double latitude = 52.2297, double longitude = 21.0122); // По умолчанию Варшава
 
     void setCoordinates(double latitude, double longitude);
+    double getLatitude() const { return _lat; }
+    double getLongitude() const { return _lon; }
     
     // Расчет параметров Луны для заданного UNIX timestamp (UTC)
     MoonTelemetry calculateMoon(time_t utcEpoch);
