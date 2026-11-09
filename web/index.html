@@ -1007,6 +1007,31 @@
     .artisan-reset-btn:active {
       transform: scale(0.98);
     }
+    .artisan-ota-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      background: rgba(129, 140, 248, 0.08);
+      border: 1px solid rgba(129, 140, 248, 0.2);
+      color: #C7D2FE;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: all 160ms var(--ease-out);
+    }
+    .artisan-ota-btn:hover {
+      background: rgba(129, 140, 248, 0.16);
+      border-color: rgba(129, 140, 248, 0.4);
+      color: #FFF;
+    }
+    .artisan-ota-btn:active {
+      transform: scale(0.98);
+    }
 
     @keyframes fadeInDown {
       from { opacity: 0; transform: translateY(-6px); }
@@ -1507,6 +1532,15 @@
             <input id="offsetSlider" class="artisan-slider" type="range" min="0" max="359" value="0">
           </div>
         </div>
+
+        <a href="/update" class="artisan-ota-btn">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          Обновление прошивки по Wi-Fi (OTA)
+        </a>
 
         <button id="resetDefaultsBtn" class="artisan-reset-btn" type="button">
           <svg class="icon icon-sm" viewBox="0 0 24 24">

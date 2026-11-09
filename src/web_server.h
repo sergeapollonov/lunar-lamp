@@ -28,6 +28,7 @@ private:
     unsigned long _lastTeleBroadcast;
 
     void handleRoot();
+    void handleOtaPage();
     void onWebSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length);
     void handleJsonCommand(uint8_t clientNum, const String& jsonStr);
 };
