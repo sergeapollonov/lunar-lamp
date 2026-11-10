@@ -119,7 +119,7 @@ Once the lamp is assembled and mounted on the wall, firmware updates can be inst
 1. In Arduino IDE: **Sketch → Export Compiled Binary** (generates `Moon.ino.bin` in the `build/` directory).
 2. Open your browser and navigate to:
    ```
-   http://lunar-lamp.local/update   (or http://<esp32-ip>/update)
+   http://moon.local/update   (or http://<esp32-ip>/update)
    ```
 3. Select `Moon.ino.bin` and click **«Установить обновление»**.
 4. The web updater displays an animated progress bar ($0\% \to 100\%$) and automatically reboots the ESP32 in $\sim 15$ seconds.
