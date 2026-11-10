@@ -6,29 +6,38 @@ Comprehensive electrical, mechanical, and assembly specifications for the **Luna
 
 ## 📋 Bill of Materials (BOM)
 
+### Required Components (Базовый комплект)
+
 | Component | Quantity | Specification / Recommendation | Notes |
 | :--- | :---: | :--- | :--- |
 | **Microcontroller** | 1 | **ESP32 DevKit V1** (ESP-WROOM-32, 30 or 38-pin) | Dual-core 240 MHz, 4MB Flash, 2.4 GHz Wi-Fi |
 | **Addressable LED Strip** | 1.57 m | **5V FCOB SPI RGB IC** (160 LEDs/meter) | WS2811 / WS2812B compatible protocol, continuous phosphor (zero hotspots) |
 | **Power Supply** | 1 | **5V 3.0A (15W)** USB-C Power Adapter | High-quality branded PSU (e.g. Baseus, Ugreen, Anker) |
-| **Power Breakout** | 1 | **USB-C Female Breakout Board** (VBUS / GND pads) | Direct power tap with thick copper pads |
-| **Electrolytic Capacitor** | 1 | **1000 µF, 6.3V or 16V** Low-ESR | Placed across +5V and GND at the power input to absorb inrush current |
-| **Damping Resistor** | 1 | **330 Ω to 470 Ω** (0.25W) | Inline on GPIO 18 data line to prevent signal ringing and voltage spikes |
+| **Power Breakout** | 1 | **USB-C Female Breakout Board** (or TP4056 USB-C pads) | Direct power tap on VBUS (+5V) and GND |
 | **Power Wire** | ~2 m | **AWG 20 or AWG 18** stranded silicone wire | Flexible, low voltage drop for 2.5A current rails |
 | **Signal Wire** | ~0.5 m | **AWG 24 or AWG 26** stranded wire | For GPIO 18 data and optional sensors |
 | **3D Printed Housing** | 1 set | [MakerWorld Model #2320985 (V2)](https://makerworld.com/pl/models/2320985-large-illuminated-lunar-wall-lamp-version-2) | 50 cm outer ring, diffuser channel, electronics bay |
+
+### Optional Components (Опционально — не обязательно для сборки)
+
+| Component | Quantity | Specification | When to use / Purpose |
+| :--- | :---: | :--- | :--- |
+| **Electrolytic Capacitor** | 1 | **1000 µF, 6.3V or 16V** Low-ESR | *Опционально:* сглаживает броски тока при использовании нестабильных блоков питания. Не требуется при качественном адаптере 5V 3A и плавном программном включении. |
+| **Damping Resistor** | 1 | **330 Ω to 470 Ω** (0.25W) | *Опционально:* гасит паразитные отражения сигнала в длинных проводах (> 30–50 см). В корпусе лампы провод короткий (5–10 см), поэтому GPIO 18 подключается **напрямую к DIN**. |
+| **IR Receiver Kit** | 1 | **HX1838 + NEC Remote** | *Опционально:* для управления режимами с инфракрасного пульта (CR2032/CR2025). |
 
 ---
 
 ## ⚡ Electrical Schematic & Wiring Diagram
 
+### Standard Direct Connection (Базовая схема — без лишних деталей)
+
+В корпусе лампы контроллер ESP32 располагается в непосредственной близости от стыка ленты (длина сигнального провода всего 5–10 см). Все компоненты подключаются напрямую:
+
 ```
                  +5V USB-C Power Supply (5V 3.0A)
                          │               │
                         [+]             [-]
-                         │               │
-                         ├──[1000µF CAP]─┤ (Electrolytic filter capacitor)
-                         │               │
                          │               │
        ┌─────────────────┴─┐           ┌─┴─────────────────┐
        │   ESP32 DevKit    │           │                   │
@@ -38,15 +47,13 @@ Comprehensive electrical, mechanical, and assembly specifications for the **Luna
        │                   │           │                   │
        │   GPIO 18 (Data)  │           │                   │
        └─────────┬─────────┘           │                   │
-                 │                     │                   │
-             [ 330Ω ]                  │                   │
-                 │                     │                   │
+                 │ (Direct wire)       │                   │
                  ▼                     │                   │
        ┌───────────────────┐           │                   │
        │ FCOB LED Strip    │           │                   │
        │ Start (LED #0)    │           │                   │
        │   +5V ────────────┼───────────┘                   │
-       │   DIN ────────────┘ (via 330Ω)                    │
+       │   DIN ────────────┘ (Direct to GPIO 18)           │
        │   GND ────────────────────────────────────────────┤
        │                   │                               │
        │   ... 252 LEDs    │                               │
@@ -58,6 +65,11 @@ Comprehensive electrical, mechanical, and assembly specifications for the **Luna
        │   GND (Injection)─────────────────────────────────┘
        └───────────────────┘
 ```
+
+> [!NOTE] Опциональные элементы защиты (по желанию):
+> Если у вас под рукой есть компоненты и вы хотите добавить дополнительную фильтрацию:
+> * **Конденсатор 1000 µF:** припаивается параллельно питанию (плюс к +5V, минус к GND) около разъема USB-C.
+> * **Резистор 330–470 Ω:** впаивается в разрыв провода между GPIO 18 и контактом DIN ленты (актуально только если провод длиннее 30 см).
 
 ---
 
@@ -96,7 +108,7 @@ The mathematical engine in `LedEngine` calculates terminator angles relative to 
    * **252 FCOB LEDs:** Up to $2300\text{ mA}$.
    * **Total Max Draw:** $\le 2500\text{ mA}$, leaving a safe $500\text{ mA}$ headroom on the 5V 3.0A USB-C power supply.
 3. **Logic Levels:**
-   * ESP32 GPIO operates at 3.3V logic. FCOB WS2811/WS2812 ICs running at 5V accept 3.3V data reliably when the inline 330 Ω resistor is placed close to the ESP32 pin.
+   * ESP32 GPIO operates at 3.3V logic. FCOB WS2811/WS2812 ICs running at 5V reliably detect 3.3V high logic levels directly without any level shifter or resistor when wire lengths are under 20 cm (GPIO 18 -> DIN directly).
 
 ---
 
