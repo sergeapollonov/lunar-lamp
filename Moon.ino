@@ -110,7 +110,7 @@ void setup() {
     Serial.println("\n");
     Serial.println("==========================================================");
     Serial.println("       🌕 LUNAR LAMP — SMART WALL ILLUMINATION 🌕         ");
-    Serial.println("           Stage 2: Artisan Web UI & LED Engine           ");
+    Serial.println("           Stage 5: Web OTA & Hardware Assembly (v1.5.0)           ");
     Serial.println("==========================================================");
 
     // Загрузка настроек из энергонезависимой памяти (NVS)
