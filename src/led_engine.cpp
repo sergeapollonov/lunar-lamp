@@ -186,8 +186,10 @@ void LedEngine::renderAstronomyPhase(double phaseAngleDeg, double illumination, 
 }
 
 void LedEngine::renderBreathe(CRGB baseColor) {
-    float wave = (sin(millis() / 1500.0) + 1.0f) * 0.5f; // 0.0 .. 1.0
-    float factor = 0.15f + (0.85f * wave);
+    // Органичный вдох и выдох (цикл ~4 секунды)
+    float wave = (sin(millis() / 2000.0f) + 1.0f) * 0.5f; // 0.0 .. 1.0
+    float smoothWave = wave * wave * (3.0f - 2.0f * wave); // Smoothstep кривая
+    float factor = 0.08f + (0.92f * smoothWave);
     for (int i = 0; i < _state.ledCount; i++) {
         _leds[i] = CRGB(
             (uint8_t)(baseColor.r * factor),
@@ -199,27 +201,66 @@ void LedEngine::renderBreathe(CRGB baseColor) {
 
 void LedEngine::renderEclipse() {
     uint32_t ms = millis();
+    // Медленное величественное движение тени Земли по кольцу (~45 сек на оборот)
+    float shadowPos = fmod(ms * 0.00014f, 1.0f) * _state.ledCount;
+    // Мягкое глубокое дыхание ореола (цикл ~5 секунд)
+    float breathe = (sin(ms / 2500.0f) + 1.0f) * 0.5f;
+
     for (int i = 0; i < _state.ledCount; i++) {
-        // Случайные мерцающие протуберанцы короны через синусоиды
-        uint8_t noise = inoise8(i * 35, ms / 12);
-        uint8_t flicker = inoise8(i * 50, ms / 6);
-        
-        CRGB flameColor = ColorFromPalette(HeatColors_p, noise, flicker, LINEARBLEND);
-        _leds[i] = flameColor;
+        // Расстояние до центра тени Земли по окружности
+        float dist = fabs((float)i - shadowPos);
+        if (dist > _state.ledCount / 2.0f) dist = _state.ledCount - dist;
+        float normDist = dist / (_state.ledCount / 2.0f); // 0.0 (в тени) .. 1.0 (на краю)
+
+        // Мягкие протуберанцы короны на светлом краю
+        uint8_t flare = inoise8(i * 6, ms / 20);
+        float flareFactor = (flare / 255.0f) * 0.20f;
+
+        // В центре тени: глубокий темный рубин/багрянец (R=100..160, G=5..15, B=0..5)
+        // На краю: раскаленная медь и янтарное золото (R=255, G=60..100, B=5..20)
+        uint8_t r = (uint8_t)(100 + 155 * normDist);
+        uint8_t g = (uint8_t)(6 + 80 * pow(normDist, 2.2f) + 20 * flareFactor);
+        uint8_t b = (uint8_t)(2 + 12 * pow(normDist, 3.0f));
+
+        float dim = 0.75f + 0.25f * breathe;
+        _leds[i] = CRGB((uint8_t)(r * dim), (uint8_t)(g * dim), (uint8_t)(b * dim));
     }
 }
 
 void LedEngine::renderAurora() {
     uint32_t ms = millis();
     for (int i = 0; i < _state.ledCount; i++) {
-        // Две перекрестные синусоидальные волны
-        float w1 = sin((i * 12.0f + ms * 0.08f) * M_PI / 180.0f);
-        float w2 = sin((i * 18.0f - ms * 0.05f) * M_PI / 180.0f);
-        float blend = (w1 + w2) * 0.5f; // -1.0 .. 1.0
+        // Крупномасштабные медленные занавеси полярного сияния по периметру кольца
+        double angle = (i * 2.0 * M_PI) / _state.ledCount;
+        double w1 = sin(angle + ms * 0.0004);
+        double w2 = sin(angle * 2.0 - ms * 0.0006 + 1.2);
+        double wave = (w1 + 0.6 * w2) / 1.6; // -1.0 .. 1.0
+        double norm = (wave + 1.0) * 0.5;    // 0.0 .. 1.0
 
-        uint8_t g = (uint8_t)(160 + 95 * ((blend + 1.0f) * 0.5f));
-        uint8_t b = (uint8_t)(140 + 115 * ((1.0f - blend) * 0.5f));
-        uint8_t r = (uint8_t)(30 + 30 * fabs(blend));
+        // Натуральный спектр северного сияния:
+        // Тёмный бархат ночи -> Изумрудный зелёный (557 нм) -> Бирюза -> Пурпурно-фиолетовый (азот)
+        uint8_t r, g, b;
+        if (norm < 0.25) {
+            double dim = norm / 0.25;
+            r = (uint8_t)(5 * dim);
+            g = (uint8_t)(20 * dim);
+            b = (uint8_t)(45 * dim);
+        } else if (norm < 0.65) {
+            double f = (norm - 0.25) / 0.40;
+            r = (uint8_t)(5 + f * 15);
+            g = (uint8_t)(20 + f * 235);
+            b = (uint8_t)(45 - f * 10);
+        } else if (norm < 0.85) {
+            double f = (norm - 0.65) / 0.20;
+            r = (uint8_t)(20 + f * 40);
+            g = (uint8_t)(255 - f * 85);
+            b = (uint8_t)(35 + f * 190);
+        } else {
+            double f = (norm - 0.85) / 0.15;
+            r = (uint8_t)(60 + f * 140);
+            g = (uint8_t)(170 - f * 140);
+            b = (uint8_t)(225 + f * 30);
+        }
 
         _leds[i] = CRGB(r, g, b);
     }
